@@ -442,13 +442,14 @@ process VQSR_INDEL {
     file dbsnp_idx
     file gold_indel
     file gold_indel_idx
+    file interval
 
     output:
     file 'recal_indel.recal' into vqsr_indel_recal
     file 'recal_indel.recal.idx' into vqsr_indel_recal_idx
     file 'recal_indel.tranches' into vqsr_indel_tranches
     file 'recal_indel.plots.R' into vqsr_indel_Rscript
-    file interval
+    
 
     script:
     """
