@@ -1,0 +1,1 @@
+This folder has pipelines developed using Nextflow. Each folder has a sperate pipeline. Each pipeline has 2 types of files: .nf files stores codes, .config files store all the parameters that are needed by the pipeline.
