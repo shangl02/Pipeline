@@ -19,3 +19,4 @@ Softwares that needs to be installed
 * tabix
 * trimmomatic
 * bcftools
+* picardtools
