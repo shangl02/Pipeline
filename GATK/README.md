@@ -1,4 +1,4 @@
-GATK pipeline for whole exome sequencing
+GATK pipeline for whole genome/exome sequencing
 ========================================
 It's wirtten in nextflow.
 There are two parts for this pipeline.
