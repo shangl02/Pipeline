@@ -205,7 +205,7 @@ process MarkDuplicates {
 
     script:
     """
-    picard MarkDuplicates I=${bam} M=metrics.txt O=${sample}_rmdup.bam TMP_DIR=tmp
+    gatk --java-options "-Xmx8G" MarkDuplicates I=${bam} M=metrics.txt O=${sample}_rmdup.bam TMP_DIR=tmp
     samtools index ${sample}_rmdup.bam
     """
 }
@@ -304,7 +304,7 @@ process HaplotypeCaller {
     -L ${chrom}
 
     bgzip ${chrom}.g.vcf
-    tabxi ${chrom}.g.vcf.gz
+    tabix ${chrom}.g.vcf.gz
     echo ${chrom}.g.vcf.gz.tbi
     """
 }
