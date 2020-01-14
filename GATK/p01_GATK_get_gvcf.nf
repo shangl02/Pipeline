@@ -205,7 +205,7 @@ process MarkDuplicates {
 
     script:
     """
-    gatk --java-options "-Xmx8G" MarkDuplicates I=${bam} M=metrics.txt O=${sample}_rmdup.bam TMP_DIR=tmp
+    gatk --java-options "-Xmx8G" MarkDuplicates --INPUT ${bam} --METRICS_FILE metrics.txt --OUTPUT ${sample}_rmdup.bam --TMP_DIR tmp
     samtools index ${sample}_rmdup.bam
     """
 }
