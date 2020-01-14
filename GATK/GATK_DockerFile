@@ -1,0 +1,27 @@
+FROM ubuntu:18.04
+
+MAINTAINER ShangzhongLi <Shangzhong.Li@pfizer.com>
+
+ENV PATH /opt/miniconda/bin:$PATH
+# ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+
+# install conda
+SHELL ["/bin/bash", "-c"]
+RUN apt-get update && apt-get install -y wget && \
+     cd /opt && \
+     wget --quiet --no-check-certificate https://repo.continuum.io/miniconda/Miniconda3-4.7.12.1-Linux-x86_64.sh && \
+     chmod 755 Miniconda3-4.7.12.1-Linux-x86_64.sh && \
+     ./Miniconda3-4.7.12.1-Linux-x86_64.sh -b -p /opt/miniconda && \
+     rm Miniconda3-4.7.12.1-Linux-x86_64.sh && \     
+     eval "$(/opt/miniconda/bin/conda shell.bash hook)" && \
+     conda install -y -c bioconda trimmomatic && \
+     conda install -y -c bioconda bwa && \
+     conda install -y -c bioconda samtools && \
+     conda install -y -c bioconda tabix && \
+     conda install -y -c bioconda bcftools && \
+     conda install -y -c bioconda gatk4 && \
+     conda install -y -c bioconda nextflow && \
+     pip install multiqc
+CMD ["/bin/bash"]
+
+
