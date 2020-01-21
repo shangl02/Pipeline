@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y wget && \
      conda install -y -c bioconda bcftools && \
      conda install -y -c bioconda gatk4 && \
      conda install -y -c bioconda nextflow && \
+     cp /opt/miniconda/lib/libcrypto.so.1.1 /opt/miniconda/lib/libcrypto.so.1.0.0 && \
      pip install multiqc
 CMD ["/bin/bash"]
 
