@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y wget && \
      ./Miniconda3-4.7.12.1-Linux-x86_64.sh -b -p /opt/miniconda && \
      rm Miniconda3-4.7.12.1-Linux-x86_64.sh && \     
      eval "$(/opt/miniconda/bin/conda shell.bash hook)" && \
+     conda install -y -c bioconda fastqc && \
      conda install -y -c bioconda trimmomatic && \
      conda install -y -c bioconda bwa && \
      conda install -y -c bioconda samtools && \
