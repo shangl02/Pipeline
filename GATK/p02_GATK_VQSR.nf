@@ -9,7 +9,6 @@ ref_dict =  ref_fa.parent / ref_fa.baseName + '.dict'
 interval = file(params.interval)
 
 gvcf_path = file(params.gvcf_path)
-multiqc_config = file(params.multiqc_config)
 
 // (2) check environment resource
 ava_mem = (double) (Runtime.getRuntime().freeMemory())
@@ -92,6 +91,8 @@ process ConsolidateGVCF_GenotypeGVCF {
     --tmp-dir=${gvcf_path} \
     -L ${inter}
 
+    mkdir -p ${params.out_dir}/HaplotypeCaller
+
     gatk --java-options "-Xmx4g" GenotypeGVCFs \
     -R ${ref_fa} \
     -V gendb://${inter_folder} \
@@ -117,11 +118,10 @@ process mergeGenotypeGVCF {
 	"""
 	bcftools concat -a -o unsort.vcf.gz -O z ${vcfs}
     mkdir tmp
-	bcftools sort -T tmp -o haplotype.vcf.gz -O z unsort.vcf.gz 
-    rm -r tmp
-	rm unsort.vcf.gz
-	tabix haplotype.vcf.gz
-	"""
+    bcftools sort -T tmp -o haplotype.vcf.gz -O z unsort.vcf.gz 
+    rm unsort.vcf.gz
+    tabix haplotype.vcf.gz
+    """
 }
 
 
