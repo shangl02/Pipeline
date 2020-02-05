@@ -414,10 +414,12 @@ process MergeVCF {
 
     output:
     file "${sample}.g.vcf.gz" into merge_g_vcf
+    file "${sample}.g.vcf.gz.tbi" into merge_g_vcf_index
 
     script:
     """
     bcftools concat -o ${sample}.g.vcf.gz -O z chrM.g.vcf.gz chr1.g.vcf.gz chr2.g.vcf.gz chr3.g.vcf.gz chr4.g.vcf.gz chr5.g.vcf.gz chr6.g.vcf.gz chr7.g.vcf.gz chr8.g.vcf.gz chr9.g.vcf.gz chr10.g.vcf.gz chr11.g.vcf.gz chr12.g.vcf.gz chr13.g.vcf.gz chr14.g.vcf.gz chr15.g.vcf.gz chr16.g.vcf.gz chr17.g.vcf.gz chr18.g.vcf.gz chr19.g.vcf.gz chr20.g.vcf.gz chr21.g.vcf.gz chr22.g.vcf.gz chrX.g.vcf.gz chrY.g.vcf.gz 
     tabix ${sample}.g.vcf.gz
+    echo ${sample}.g.vcf.gz.tbi
     """
 }
