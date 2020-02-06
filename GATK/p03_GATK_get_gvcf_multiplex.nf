@@ -250,7 +250,7 @@ bam_for_merge_index
 process MergeBam {
     tag "${sample}"
 
-    publishDir pattern: "*.log",
+    publishDir pattern: "*.{log,stats}",
         path: {params.out_dir + '/MultiQC/QC04_mergeBam'},
         mode: 'copy', overwrite: true
 
@@ -261,6 +261,7 @@ process MergeBam {
     output:
     set val(sample), file("${sample}.sort.bam") into bam_for_rmdup
     file("${sample}.log") into merged_bam_log
+    file("${sample}.stats") into merged_bam_stats
 
     script:
     merge_threads = ava_cpu
@@ -269,6 +270,7 @@ process MergeBam {
     samtools merge -@ ${merge_threads} ${sample}.sort.bam ${bam_files}
     samtools index ${sample}.sort.bam
     samtools flagstat ${sample}.sort.bam > ${sample}.log
+    samtools stats -@ ${merge_threads} ${sample}.sort.bam > ${sample}.stats
     """
 }
 
