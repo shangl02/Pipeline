@@ -259,7 +259,7 @@ process MergeBam {
     set val(sample), file(bams_index) from merged_bam_index
 
     output:
-    set val(sample), file("${sample}.sort.bam") into bam_for_rmdup
+    set val(sample), file("${sample}.sort.bam"), file("${sample}.sort.bam.bai") into bam_for_rmdup
     file("${sample}.log") into merged_bam_log
     file("${sample}.stats") into merged_bam_stats
 
@@ -271,6 +271,7 @@ process MergeBam {
     samtools index ${sample}.sort.bam
     samtools flagstat ${sample}.sort.bam > ${sample}.log
     samtools stats -@ ${merge_threads} ${sample}.sort.bam > ${sample}.stats
+    echo ${sample}.sort.bam.bai
     """
 }
 
@@ -284,16 +285,17 @@ process MarkDuplicates {
         mode: 'copy', overwrite: true
 
     input:
-    set val(sample), file(bam) from bam_for_rmdup
+    set val(sample), file(bam), file(bam_idx) from bam_for_rmdup
 
     output:
-    set val(sample), file("${sample}_rmdup.bam") into rmdup_bam_for_BQSR_table
+    set val(sample), file("${sample}_rmdup.bam"), file("${sample}_rmdup.bam.bai") into rmdup_bam_for_BQSR_table
     file "${sample}.log" into markdup_log
 
     script:
     """
     gatk --java-options "-Xmx8G" MarkDuplicates --INPUT ${bam} --METRICS_FILE ${sample}.log --OUTPUT ${sample}_rmdup.bam --TMP_DIR tmp
     samtools index ${sample}_rmdup.bam
+    echo ${sample}_rmdup.bam.bai
     """
 }
 
@@ -316,10 +318,10 @@ process BuildBQSRTable {
     file gold_indel_idx
     file interval
     
-    set val(sample), file(rmdup_bam) from rmdup_bam_for_BQSR_table
+    set val(sample), file(rmdup_bam), file(rmdup_bam_idx) from rmdup_bam_for_BQSR_table
 
     output:
-    set val(sample), file(rmdup_bam) ,file("${sample}.table") into BQSR_table
+    set val(sample), file(rmdup_bam), file(rmdup_bam_idx) ,file("${sample}.table") into BQSR_table
 
     script:
     """
@@ -340,11 +342,11 @@ process RUN_BQSR {
     file ref_fa
     file ref_fai
     file ref_dict
-    set val(sample), file(bam), file(table) from BQSR_table
+    set val(sample), file(bam), file(bam_idx), file(table) from BQSR_table
     file interval
 
     output:
-    set val(sample), file("${sample}_bqsr.bam") into bam_bqsr_for_vari_call, bam_for_merge_gvcf
+    set val(sample), file("${sample}_bqsr.bam"), file("${sample}_bqsr.bam.bai") into bam_bqsr_for_vari_call
 
     script:
     """
@@ -355,6 +357,7 @@ process RUN_BQSR {
     -O ${sample}_bqsr.bam \
     -L ${interval}
     samtools index ${sample}_bqsr.bam
+    echo ${sample}_bqsr.bam.bai
     """
 }
 
@@ -370,7 +373,7 @@ chr_idx.concat(other).set {chroms}
 
 chroms
     .combine(bam_bqsr_for_vari_call)
-    .set {chrom_bams}
+    .set {chrom_bams}  // format: [chr, sample, bam, bam_idx] 
 
 process HaplotypeCaller {
     tag "${sample}_${chrom}"
@@ -379,48 +382,71 @@ process HaplotypeCaller {
     file ref_fa
     file ref_fai
     file ref_dict
-    set chrom, val(sample), file(bqsr_bam) from chrom_bams
+    set val(chrom), val(sample), file(bqsr_bam), file(bqsr_bam_idx) from chrom_bams
 
     output:
-    file "${chrom}.g.vcf.gz" into chrom_g_vcf
-    file "${chrom}.g.vcf.gz.tbi" into chrom_g_vcf_index
-    file "*.g.vcf*" into haplotype_for_waiting
+    set val(sample), val(chrom), file("${sample}.${chrom}.g.vcf.gz"), file("${sample}.${chrom}.g.vcf.gz.tbi") into chrom_g_vcf 
 
     script:
     """
     gatk HaplotypeCaller -I ${bqsr_bam} \
-    -O ${chrom}.g.vcf \
+    -O ${sample}.${chrom}.g.vcf.gz \
     --emit-ref-confidence GVCF \
     -R ${ref_fa} \
     -L ${chrom}
 
-    bgzip ${chrom}.g.vcf
-    tabix ${chrom}.g.vcf.gz
-    echo ${chrom}.g.vcf.gz.tbi
+    echo ${sample}.${chrom}.g.vcf.gz.tbi
     """
 }
 
 /*--------------  Merge variants for all chromosomes --------------------
 */
+chrom_g_vcf  // [sample, chr, vcf, vcf_index]
+    .groupTuple()
+    .set {all_vcfs}
+
+
 process MergeVCF {
     tag "${sample}"
 
-    publishDir pattern: "*.g.vcf.gz",
+    publishDir pattern: "*.g.vcf.{gz,tbi}",
         path: {params.out_dir + '/HaplotypeCaller'},
         mode: 'copy', overwrite: true
 
     input:
-    file chroms from chrom_g_vcf.collect()
-    file index from chrom_g_vcf_index.collect()
-    set val(sample), file(bam) from bam_for_merge_gvcf
-
+    set val(sample), val(chrom), file(vcf), file(vcf_idx) from all_vcfs
+    
     output:
-    file "${sample}.g.vcf.gz" into merge_g_vcf
-    file "${sample}.g.vcf.gz.tbi" into merge_g_vcf_index
+    set file("${sample}.g.vcf.gz"), file("${sample}.g.vcf.gz.tbi") into merge_g_vcf
 
     script:
     """
-    bcftools concat -o ${sample}.g.vcf.gz -O z chrM.g.vcf.gz chr1.g.vcf.gz chr2.g.vcf.gz chr3.g.vcf.gz chr4.g.vcf.gz chr5.g.vcf.gz chr6.g.vcf.gz chr7.g.vcf.gz chr8.g.vcf.gz chr9.g.vcf.gz chr10.g.vcf.gz chr11.g.vcf.gz chr12.g.vcf.gz chr13.g.vcf.gz chr14.g.vcf.gz chr15.g.vcf.gz chr16.g.vcf.gz chr17.g.vcf.gz chr18.g.vcf.gz chr19.g.vcf.gz chr20.g.vcf.gz chr21.g.vcf.gz chr22.g.vcf.gz chrX.g.vcf.gz chrY.g.vcf.gz 
+    bcftools concat -o ${sample}.g.vcf.gz -O z \
+    ${sample}.chr1.g.vcf.gz \
+    ${sample}.chr2.g.vcf.gz \
+    ${sample}.chr3.g.vcf.gz \
+    ${sample}.chr4.g.vcf.gz \
+    ${sample}.chr5.g.vcf.gz \
+    ${sample}.chr6.g.vcf.gz \
+    ${sample}.chr7.g.vcf.gz \
+    ${sample}.chr8.g.vcf.gz \
+    ${sample}.chr9.g.vcf.gz \
+    ${sample}.chr10.g.vcf.gz \
+    ${sample}.chr11.g.vcf.gz \
+    ${sample}.chr12.g.vcf.gz \
+    ${sample}.chr13.g.vcf.gz \
+    ${sample}.chr14.g.vcf.gz \
+    ${sample}.chr15.g.vcf.gz \
+    ${sample}.chr16.g.vcf.gz \
+    ${sample}.chr17.g.vcf.gz \
+    ${sample}.chr18.g.vcf.gz \
+    ${sample}.chr19.g.vcf.gz \
+    ${sample}.chr20.g.vcf.gz \
+    ${sample}.chr21.g.vcf.gz \
+    ${sample}.chr22.g.vcf.gz \
+    ${sample}.chrX.g.vcf.gz \
+    ${sample}.chrY.g.vcf.gz \
+    ${sample}.chrM.g.vcf.gz
     tabix ${sample}.g.vcf.gz
     echo ${sample}.g.vcf.gz.tbi
     """

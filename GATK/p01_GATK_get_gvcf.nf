@@ -279,54 +279,82 @@ chr_idx.concat(other).set {chroms}
 
 chroms
     .combine(bam_bqsr_for_vari_call)
-    .set {chrom_bams}
+    .set {chrom_bams}    // format: [chrom, sample, bam_file]
 
 process HaplotypeCaller {
-    // publishDir "${params.out_dir}/HaplotypeCaller"
+    tag "${sample}${chrom}"
 
     input:
     file ref_fa
     file ref_fai
     file ref_dict
-    set chrom, val(sample), file(bqsr_bam) from chrom_bams
+    set val(chrom), val(sample), file(bqsr_bam) from chrom_bams
 
     output:
-    file "${chrom}.g.vcf.gz" into chrom_g_vcf
-    file "${chrom}.g.vcf.gz.tbi" into chrom_g_vcf_index
-    file "*.g.vcf*" into haplotype_for_waiting
+    set val(sample), val(chrom), file("${sample}.${chrom}.g.vcf.gz"), file("${sample}.${chrom}.g.vcf.gz.tbi") into chrom_g_vcf
+    
 
     script:
     """
     gatk HaplotypeCaller -I ${bqsr_bam} \
-    -O ${chrom}.g.vcf \
+    -O ${sample}.${chrom}.g.vcf.gz \
     --emit-ref-confidence GVCF \
     -R ${ref_fa} \
     -L ${chrom}
 
-    bgzip ${chrom}.g.vcf
-    tabix ${chrom}.g.vcf.gz
-    echo ${chrom}.g.vcf.gz.tbi
+    echo ${sample}.${chrom}.g.vcf.gz.tbi
     """
 }
 
 /*--------------  Merge variants for all chromosomes --------------------
 */
+chrom_g_vcf  // [sample, chr, vcf, vcf_index]
+    .groupTuple()
+    .set {all_vcfs}
+
+
 process MergeVCF {
-    publishDir pattern: "*.g.vcf.gz",
+    tag "${family}"
+
+    publishDir pattern: "*.{g.vcf.gz,g.vcf.gz.tbi}",
         path: {params.out_dir + '/HaplotypeCaller'},
         mode: 'copy', overwrite: true
 
     input:
-    file chroms from chrom_g_vcf.collect()
-    file index from chrom_g_vcf_index.collect()
-    set val(sample), file(bam) from bam_for_merge_gvcf
+    set val(sample), val(chrom), file(vcf), file(vcf_idx) from all_vcfs
 
     output:
-    file "${sample}.g.vcf.gz" into merge_g_vcf
+    set file("${sample}.g.vcf.gz"), file("${sample}.g.vcf.gz.tbi") into merge_g_vcf
 
     script:
     """
-    bcftools concat -o ${sample}.g.vcf.gz -O z chrM.g.vcf.gz chr1.g.vcf.gz chr2.g.vcf.gz chr3.g.vcf.gz chr4.g.vcf.gz chr5.g.vcf.gz chr6.g.vcf.gz chr7.g.vcf.gz chr8.g.vcf.gz chr9.g.vcf.gz chr10.g.vcf.gz chr11.g.vcf.gz chr12.g.vcf.gz chr13.g.vcf.gz chr14.g.vcf.gz chr15.g.vcf.gz chr16.g.vcf.gz chr17.g.vcf.gz chr18.g.vcf.gz chr19.g.vcf.gz chr20.g.vcf.gz chr21.g.vcf.gz chr22.g.vcf.gz chrX.g.vcf.gz chrY.g.vcf.gz 
+    bcftools concat -o ${sample}.g.vcf.gz -O z \
+    ${sample}.chr1.g.vcf.gz \
+    ${sample}.chr2.g.vcf.gz \
+    ${sample}.chr3.g.vcf.gz \
+    ${sample}.chr4.g.vcf.gz \
+    ${sample}.chr5.g.vcf.gz \
+    ${sample}.chr6.g.vcf.gz \
+    ${sample}.chr7.g.vcf.gz \
+    ${sample}.chr8.g.vcf.gz \
+    ${sample}.chr9.g.vcf.gz \
+    ${sample}.chr10.g.vcf.gz \
+    ${sample}.chr11.g.vcf.gz \
+    ${sample}.chr12.g.vcf.gz \
+    ${sample}.chr13.g.vcf.gz \
+    ${sample}.chr14.g.vcf.gz \
+    ${sample}.chr15.g.vcf.gz \
+    ${sample}.chr16.g.vcf.gz \
+    ${sample}.chr17.g.vcf.gz \
+    ${sample}.chr18.g.vcf.gz \
+    ${sample}.chr19.g.vcf.gz \
+    ${sample}.chr20.g.vcf.gz \
+    ${sample}.chr21.g.vcf.gz \
+    ${sample}.chr22.g.vcf.gz \
+    ${sample}.chrX.g.vcf.gz \
+    ${sample}.chrY.g.vcf.gz \
+    ${sample}.chrM.g.vcf.gz
     tabix ${sample}.g.vcf.gz
+    echo ${sample}.g.vcf.gz.tbi
     """
 }
