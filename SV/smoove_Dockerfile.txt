@@ -1,0 +1,5 @@
+FROM brentp/smoove:v0.2.5
+
+RUN conda install -y -c bioconda nextflow=20.01 && \
+	conda install -y -c bioconda picard=2.21.8
+CMD ["/bin/bash"]
