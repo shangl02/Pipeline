@@ -128,7 +128,7 @@ process mergeGenotypeGVCF {
 /*---------------- VQSR --------------------------------
 */
 process VQSR_SNP {
-    tag {vqsr_snp}
+
     publishDir pattern: "recal_snp.*",
         path: {params.out_dir + '/VQSR'},
         mode: 'copy', overwrite: true
@@ -168,15 +168,15 @@ process VQSR_SNP {
     --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 ${dbsnp} \
     -an DP -an QD -an MQ -an MQRankSum -an ReadPosRankSum -an FS -an SOR \
     -mode SNP \
-    -O recal_snp.recal \
+    --output recal_snp.recal \
     --tranches-file recal_snp.tranches \
     --rscript-file recal_snp.plots.R \
     -L ${interval}
+    echo recal_snp.recal.idx
     """
 }
 
 process Apply_VQSR_SNP {
-    tag {apply_vqsr_snp}
 
     input:
     file vqsr_snp_recal
@@ -197,14 +197,14 @@ process Apply_VQSR_SNP {
     --recal-file ${vqsr_snp_recal} \
     --tranches-file ${vqsr_snp_tranches} \
     -mode SNP \
-    -O recal_snps_raw_indels.vcf.gz \
+    --output recal_snps_raw_indels.vcf.gz \
     -L ${interval}
     """
 
 }
 
 process VQSR_INDEL {
-    tag {vqsr_indel}
+    
     publishDir pattern: "recal_indel.*",
         path: {params.out_dir + '/VQSR'},
         mode: 'copy', overwrite: true
@@ -238,7 +238,7 @@ process VQSR_INDEL {
     -an QD -an DP -an FS -an SOR \
     -an MQRankSum -an ReadPosRankSum -mode INDEL \
     --max-gaussians 4 \
-    -O recal_indel.recal \
+    --output recal_indel.recal \
     --tranches-file recal_indel.tranches \
     --rscript-file recal_indel.plots.R \
     -L ${interval}
@@ -246,8 +246,8 @@ process VQSR_INDEL {
 }
 
 process Apply_VQSR_INDEL {
-    tag {apply_vqsr_indel}
-    publishDir pattern: "recal_varis.vcf.gz",
+    
+    publishDir pattern: "recal_varis.vcf.gz*",
         path: {params.out_dir + '/Final'},
         mode: 'copy', overwrite: true
 
@@ -261,6 +261,7 @@ process Apply_VQSR_INDEL {
 
     output:
     file 'recal_varis.vcf.gz' into recal_varis_vcf
+    file 'recal_varis.vcf.gz.tbi' into recal_varis_vcf_index
 
     script:
     """
@@ -270,8 +271,9 @@ process Apply_VQSR_INDEL {
     --tranches-file ${vqsr_indel_tranches} \
     -mode INDEL \
     -ts-filter-level 99.0 \
-    -O recal_varis.vcf.gz \
+    --output recal_varis.vcf.gz \
     -L ${interval}
+    echo recal_varis.vcf.gz.tbi
     """
 }
 
