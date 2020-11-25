@@ -166,7 +166,7 @@ process Build_index {
 
 // (2) align reads using bwa mem
 process Align_reads {
-    tag {bwa_mem}
+    tag {bwa_mem_tag}
 
     input:
     val bwa_idx from bwa_index
@@ -177,6 +177,7 @@ process Align_reads {
     set val(sample), file("${sample}_sort.bam") into bam_for_rmdup
 
     script:
+    bwa_mem_tag = sample
     bwa_threads = ava_cpu
     println fq_files
     if (params.pair_end) {
@@ -204,6 +205,7 @@ process MarkDuplicates {
     set val(sample), file("${sample}_rmdup.bam") into rmdup_bam_for_BQSR_table
 
     script:
+    rmdup = sample
     """
     gatk --java-options "-Xmx8G" MarkDuplicates --INPUT ${bam} --METRICS_FILE metrics.txt --OUTPUT ${sample}_rmdup.bam --TMP_DIR tmp
     samtools index ${sample}_rmdup.bam
@@ -231,6 +233,7 @@ process BuildBQSRTable {
     set val(sample), file(rmdup_bam) ,file("${sample}.table") into BQSR_table
 
     script:
+    bqsr_table = sample
     """
     gatk BaseRecalibrator \
     -I ${rmdup_bam} \
@@ -256,6 +259,7 @@ process RUN_BQSR {
     set val(sample), file("${sample}_bqsr.bam") into bam_bqsr_for_vari_call, bam_for_merge_gvcf
 
     script:
+    run_BQSR = sample
     """
     gatk ApplyBQSR \
     -R ${ref_fa} \
@@ -314,7 +318,7 @@ chrom_g_vcf  // [sample, chr, vcf, vcf_index]
 
 
 process MergeVCF {
-    tag "${family}"
+    tag "${sample}"
 
     publishDir pattern: "*.{g.vcf.gz,g.vcf.gz.tbi}",
         path: {params.out_dir + '/HaplotypeCaller'},
