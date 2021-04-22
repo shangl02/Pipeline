@@ -1,0 +1,8 @@
+# put repeat_info file and ref_fa file in the same folder
+disease : 'dm1'
+target : 'chr19:45768309:45772206'
+repeat_info : '/hpc/grid/wip_prw_gst-fg/CAM-MinION/hg38/dm1_config.txt'
+fast5_path : '/hpc/grid/wip_prw_gst-fg/CAM-MinION/2021-04-16_DM1_RE_5kb/DM1_5/20210416_1811_MC-110468_0_FAP71590_f2002c37/fast5'
+fastq_path : '/hpc/grid/wip_prw_gst-fg/CAM-MinION/2021-04-16_DM1_RE_5kb/DM1_5/basecall/pass'
+out_path : '/hpc/grid/wip_prw_gst-fg/CAM-MinION/2021-04-16_DM1_RE_5kb/analysis'
+ref_fa : '/hpc/grid/wip_prw_gst-fg/CAM-MinION/hg38/hg38.fasta'

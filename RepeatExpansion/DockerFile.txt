@@ -1,0 +1,40 @@
+FROM ubuntu:18.04
+
+MAINTAINER ShangzhongLi <Shangzhong.Li@pfizer.com>
+
+ENV PATH /opt/miniconda/bin:$PATH
+
+SHELL ["/bin/bash", "-c"]
+RUN apt-get update && apt-get install -y wget libpng-dev libssl-dev \
+	gcc g++ make && \
+	cd opt && \
+	wget --quiet https://repo.continuum.io/miniconda/Miniconda3-4.7.12.1-Linux-x86_64.sh && \
+	chmod 755 Miniconda3-4.7.12.1-Linux-x86_64.sh && \
+	./Miniconda3-4.7.12.1-Linux-x86_64.sh -b -p /opt/miniconda && \
+	rm Miniconda3-4.7.12.1-Linux-x86_64.sh && \     
+	eval "$(/opt/miniconda/bin/conda shell.bash hook)" && \
+	conda install -c anaconda cmake && \
+	conda install -y -c anaconda git && \
+	git clone --recursive https://github.com/giesselmann/STRique && \
+    cd STRique && \
+    pip install -r requirements.txt && \
+    python setup.py install
+
+# other packages
+RUN apt-get install -y libssl1.0.0 && \
+    conda install -y -c bioconda samtools && \
+    conda install -y -c anaconda yaml && \
+	conda install -y -c bioconda bedtools && \
+	pip install numpy && \
+	pip install pysam && \
+	pip install pandas && \
+	pip install matplotlib && \
+	pip install intervaltree && \
+	conda install -y -c bioconda pybedtools && \
+	conda install -y -c bioconda nanoplot && \
+	conda install -c anaconda seaborn=0.9.0 && \
+	conda install -y -c bioconda minimap2
+
+CMD ["/bin/bash"]
+
+
