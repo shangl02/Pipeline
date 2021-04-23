@@ -23,7 +23,7 @@ with open(param_fn, 'r') as in_f:
     param = load(in_f,Loader=Loader)
 
 disease = '/media' + param['disease']
-target = '/media' + param['target']
+target = param['target']
 repeat = '/media' + param['repeat_info']
 fast5_path = param['fast5_path']
 fastq_path = param['fastq_path']
@@ -41,7 +41,7 @@ os.chdir(out_path)
 #============= 0. merge fastq files ==================
 raw_fq_files = sorted(glob.glob(raw_fq_path + '/*.fastq'))
 cmd = 'ls {fq_p}/*.fastq | xargs cat | gzip - > {o}'.format(fq_p=raw_fq_path,o=fq_file)
-os.system(cmd)
+# os.system(cmd)
 
 fq_path = os.path.dirname(fq_file)
 fq_name = fq_file.split('/')[-1]
@@ -67,7 +67,7 @@ cmd = ('minimap2 -ax map-ont {ref} {fq} | samtools sort -T {p}/pre -o {bam} && s
 
 print('Step2: map reads to the reference genome')
 print(cmd)
-os.system(cmd)
+# os.system(cmd)
 print('Finish Step2: mapping reads to the reference genome\n\n')
 
 #============== 3. count reads mapping to each chromosome
@@ -100,7 +100,7 @@ def plot_chrom_count(bam, fig_path):
     plt.savefig(fig_path + '/chrom_read_count.png')
     
 print('Step3: count reads mapping to each chromosome')
-plot_chrom_count(bam, fig_path)
+# plot_chrom_count(bam, fig_path)
 print('Finish Step3: counting reads\n\n')
 
 #=============== 4. check coverage at each covering loci ==================
@@ -134,14 +134,14 @@ def cov_at_loci(bam, cov_fn):
 
 def plot_loc_cov(bam, target, fig_path, disease):
     cov_fn = fig_path + '/mean_cov.txt'
-    cov_at_loci(bam, cov_fn)
+    # cov_at_loci(bam, cov_fn)
     # plot coverage
     cov_df = pd.read_csv(cov_fn,sep='\t',header=0,names=['chr','s','e','cov'])
-
+    
     t_chr,t_s,t_e = target.split(':')
     t_s = int(t_s)
     t_e = int(t_e)
-    target_cov = cov_df.query('chr==@t_chr and s >=@t_s and e <=@t_e')['cov'].mean()
+    target_cov = cov_df.query('chr==@t_chr and s <= @t_s and e >= @t_e')['cov'].mean()
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -152,7 +152,6 @@ def plot_loc_cov(bam, target, fig_path, disease):
     ax.set_title('distribution of coverage for '+disease)
     plt.axvline(x=float(target_cov), color='b',linestyle='-')
     plt.savefig(fig_path + '/mean_cov_in_each_region.png')
-
 
 print('Step4: check coverage at each covering loci')
 plot_loc_cov(bam, target, fig_path, disease)
@@ -170,7 +169,7 @@ cmd = ('python /opt/STRique/scripts/STRique.py index {p} \
 
 print('Step 5.1 index the raw reads')
 print(cmd)
-os.system(cmd)
+# os.system(cmd)
 
 
 # 2. calculate the length of the repeats
@@ -186,6 +185,6 @@ cmd = ('samtools view {bam} |  \
 
 print('Step 5.2 count the repeats')
 print(cmd)
-os.system(cmd)
+# os.system(cmd)
 end = time.time()
-print(end - start)
+print('time:',end - start)
