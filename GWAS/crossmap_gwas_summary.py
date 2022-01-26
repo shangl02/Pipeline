@@ -60,7 +60,8 @@ elif chain_sour == 'UCSC':
 def get_new_col(columns):
     chr_idx = columns.index(chrom_head)
     pos_idx = columns.index(pos_head)
-    new_columns = [chrom_head, pos_head,'end'] + [h for h in columns if h not in [chrom_head, pos_head]]
+    new_columns = [chrom_head, pos_head,'end'] + \
+      [h for h in columns if h not in [chrom_head, pos_head,'end']]
     return new_columns
 
 def gwas2bed(gwas_fn, temp_path):
