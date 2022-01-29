@@ -18,26 +18,28 @@ import argparse
 
 parser = argparse.ArgumentParser(description='merge GWAS results')
 
-parser.add_argument('-i','--input',action='store',dest='input',help='gwas result file name')
+parser.add_argument('-i','--input',action='store',dest='input',help=' file name')
 parser.add_argument('-t','--temp',action='store',dest='temp',help='temprary path')
 parser.add_argument('-o','--output',action='store',dest='out',help='out file')
-parser.add_argument('-c','--chr',action='store',dest='chrom',help='header in GWAS file that indicates chromosome')
-parser.add_argument('-p','--pos',action='store',dest='pos',help='header in GWAS file that indicates position')
+parser.add_argument('-c','--chr',action='store',dest='chrom',help='header in file that indicates chromosome')
+parser.add_argument('-s','--start',action='store',dest='start',help='header in file that indicates start')
+parser.add_argument('-e','--end',action='store',dest='end',help='header in file that indicates end')
 parser.add_argument('--conversion',action='store',dest='conver',help='conversion type')
 parser.add_argument('--chain',action='store',dest='chain',help='chain type',default='ensembl')
 
 args        = parser.parse_args()
-gwas_fn     = args.input
+fn          = args.input
 temp_path   = args.temp
 out_fn      = args.out
 
 chrom_head  = args.chrom
-pos_head    = args.pos
+start       = args.start
+end         = args.end
 conver_type = args.conver
 chain_sour  = args.chain
 
-if gwas_fn.startswith('/'):
-    gwas_fn = f'/media/{gwas_fn}'
+if fn.startswith('/'):
+    fn = f'/media/{fn}'
 if out_fn.startswith('/'):
     out_fn = f'/media/{out_fn}'
 if temp_path.startswith('/'):
@@ -58,10 +60,8 @@ elif chain_sour == 'UCSC':
 
 
 def get_new_col(columns):
-    chr_idx = columns.index(chrom_head)
-    pos_idx = columns.index(pos_head)
-    new_columns = [chrom_head, pos_head,'end'] + \
-      [h for h in columns if h not in [chrom_head, pos_head,'end']]
+    new_columns = [chrom_head, start, end] + \
+      [h for h in columns if h not in [chrom_head, start,end]]
     return new_columns
 
 def gwas2bed(gwas_fn, temp_path):
@@ -70,7 +70,6 @@ def gwas2bed(gwas_fn, temp_path):
     if gwas_fn.endswith('.gz'):
         for df in pd.read_csv(gwas_fn,sep='\t',header=0,compression='gzip',chunksize=1e5):
             columns = df.columns.tolist()
-            df['end'] = df[pos_head] + 1
             new_cols = get_new_col(columns)
             if head:
                 df[new_cols].to_csv(bed_fn,sep='\t',index=False,compression='gzip')
@@ -117,7 +116,7 @@ def run_crossmap(bed_fn, out_fn, chain):
 
 
 print('step1: transfer to bed format')
-temp_fn = gwas2bed(gwas_fn, temp_path)
+temp_fn = gwas2bed(fn, temp_path)
 print('step1 finished')
 print('step2: liftover')
 run_crossmap(temp_fn, out_fn, chain_fn)
