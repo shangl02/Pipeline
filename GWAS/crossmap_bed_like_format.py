@@ -79,7 +79,6 @@ def gwas2bed(gwas_fn, temp_path):
     else:
         for df in pd.read_csv(gwas_fn,sep='\t',header=0,chunksize=1e5):
             columns = df.columns.tolist()
-            df['end'] = df[pos_head] + 1
             new_cols = get_new_col(columns)
             if head:
                 df[new_cols].to_csv(bed_fn,sep='\t',index=False,compression='gzip')
@@ -95,8 +94,9 @@ def run_crossmap(bed_fn, out_fn, chain):
     else:
         head_fn = bed_fn + '.head.txt'
     # 1. get head
-    cmd = ('gunzip -c {b} | head -n 1 > {h}').format(b=bed_fn,h=head_fn)
-    os.system(cmd)
+    with gzip.open(bed_fn,'rt') as in_h, open(head_fn,'w') as out_h:
+        fst_line = in_h.readline()
+        out_h.write(fst_line)
     # 2. cross map
     if out_fn.endswith('.gz'):
         out_fn = out_fn[:-3]
