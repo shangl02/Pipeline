@@ -28,7 +28,7 @@ If your GWAS summary stats file has both start and end column, use the following
 		-t /lustre/scratch/lis262/crossmap/temp \
 		-c '#CHROM' \
 		-s 'pos_start' \
-		-e 'pso_end'   \
+		-e 'pos_end'   \
 		--conversion 37to38
 
 * -i: input gwas file, can be gzip or not, needs to be full path
