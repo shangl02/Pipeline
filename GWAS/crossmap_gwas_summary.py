@@ -68,7 +68,8 @@ elif chain_sour == 'UCSC':
 
 def get_new_col(columns):
     if marker != '':
-        columns = [chrom_head,pos_head] + columns
+        columns = [chrom_head,pos_head, marker] + \
+          [h for h in columns if h not in [chrom_head, pos_head,marker]]
 
     if add_end == 'yes':
         new_columns = [chrom_head, pos_head,'end'] + \
@@ -130,12 +131,29 @@ def run_crossmap(bed_fn, out_fn, chain):
     # 3. sort temp folder
     temp = head_fn[:-9]
     os.makedirs(temp, exist_ok=True)
-    cmd = ('sort -k1,1 -k2,2n -T {t} {out} | \
+    if marker == '':
+        cmd = ('sort -k1,1 -k2,2n -T {t} {out} | \
            cat {head} - | bgzip > {out}.gz && \
            tabix -p bed -f -S 1 -b 2 -e 2 {out}.gz && \
            rm {infn} {out} {head} && rm -r {t}').format(t=temp,out=out_fn,head=head_fn,infn=bed_fn)
+    else:
+        if add_end == 'yes':
+            cmd = ('cat {out} | awk \'{{$4=$1\":\"$2;print}}\' \
+                   OFS=\'\t\' | sort -k1,1 -k2,2n -T {t} - | \
+                   cat {head} - | bgzip > {out}.gz && \
+                    tabix -p bed -f -S 1 -b 2 -e 2 {out}.gz && \
+                    rm {infn} {out} {head} && rm -r {t}').format(
+                    out=out_fn,t=temp,head=head_fn,infn=bed_fn) 
+        else:
+            cmd = ('cat {out} | awk \'{{$3=$1\":\"$2;print}}\' \
+                   OFS=\'\t\' | sort -k1,1 -k2,2n -T {t} - | \
+                   cat {head} - | bgzip > {out}.gz && \
+                    tabix -p bed -f -S 1 -b 2 -e 2 {out}.gz && \
+                    rm {infn} {out} {head} && rm -r {t}').format(
+                    out=out_fn,t=temp,head=head_fn,infn=bed_fn) 
     os.system(cmd)
     # print(cmd)
+
 
 
 
