@@ -21,10 +21,14 @@ parser = argparse.ArgumentParser(description='merge GWAS results')
 parser.add_argument('-i','--input',action='store',dest='input',help='gwas result file name')
 parser.add_argument('-t','--temp',action='store',dest='temp',help='temprary path')
 parser.add_argument('-o','--output',action='store',dest='out',help='out file')
-parser.add_argument('-c','--chr',action='store',dest='chrom',help='header in GWAS file that indicates chromosome')
-parser.add_argument('-p','--pos',action='store',dest='pos',help='header in GWAS file that indicates position')
+parser.add_argument('-c','--chr',action='store',dest='chrom',help='header in GWAS file that indicates chromosome',default='Chr')
+parser.add_argument('-p','--pos',action='store',dest='pos',help='header in GWAS file that indicates position',default='Pos')
 parser.add_argument('--conversion',action='store',dest='conver',help='conversion type')
 parser.add_argument('--chain',action='store',dest='chain',help='chain type',default='ensembl')
+parser.add_argument('--add_end',action='store',dest='add_end',help='add end column in the output',default='yes')
+
+parser.add_argument('-m','--marker',action='store',dest='marker',help='marker shows if chr and pos is merged',default='')
+parser.add_argument('--sep',action='store',dest='sep',help='separator between chr and pos',default=':')
 
 args        = parser.parse_args()
 gwas_fn     = args.input
@@ -35,6 +39,11 @@ chrom_head  = args.chrom
 pos_head    = args.pos
 conver_type = args.conver
 chain_sour  = args.chain
+add_end     = args.add_end
+
+# the following parameters are for the case when Chr:Pos are merged together
+marker      = args.marker
+sep         = args.sep
 
 if gwas_fn.startswith('/'):
     gwas_fn = f'/media/{gwas_fn}'
@@ -58,11 +67,25 @@ elif chain_sour == 'UCSC':
 
 
 def get_new_col(columns):
-    chr_idx = columns.index(chrom_head)
-    pos_idx = columns.index(pos_head)
-    new_columns = [chrom_head, pos_head,'end'] + \
-      [h for h in columns if h not in [chrom_head, pos_head,'end']]
+    if marker != '':
+        columns = [chrom_head,pos_head] + columns
+
+    if add_end == 'yes':
+        new_columns = [chrom_head, pos_head,'end'] + \
+          [h for h in columns if h not in [chrom_head, pos_head,'end']]
+    else:
+        new_columns = [chrom_head, pos_head] + \
+          [h for h in columns if h not in [chrom_head, pos_head,'end']]
     return new_columns
+
+def get_end_column(df):
+    if marker != '':
+        df[chrom_head] = df[marker].map(lambda x: x.split(sep)[0])
+        df[pos_head] = df[marker].map(lambda x: int(x.split(sep)[1]))
+        df['end'] = df['Pos'] + 1
+    else:
+        df['end'] = df[pos_head] + 1
+    return df
 
 def gwas2bed(gwas_fn, temp_path):
     head = True
@@ -70,7 +93,7 @@ def gwas2bed(gwas_fn, temp_path):
     if gwas_fn.endswith('.gz'):
         for df in pd.read_csv(gwas_fn,sep='\t',header=0,compression='gzip',chunksize=1e5):
             columns = df.columns.tolist()
-            df['end'] = df[pos_head] + 1
+            df = get_end_column(df)
             new_cols = get_new_col(columns)
             if head:
                 df[new_cols].to_csv(bed_fn,sep='\t',index=False,compression='gzip')
@@ -80,7 +103,7 @@ def gwas2bed(gwas_fn, temp_path):
     else:
         for df in pd.read_csv(gwas_fn,sep='\t',header=0,chunksize=1e5):
             columns = df.columns.tolist()
-            df['end'] = df[pos_head] + 1
+            df = get_end_column(df)
             new_cols = get_new_col(columns)
             if head:
                 df[new_cols].to_csv(bed_fn,sep='\t',index=False,compression='gzip')
