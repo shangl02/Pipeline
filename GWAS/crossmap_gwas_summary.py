@@ -81,10 +81,12 @@ def get_new_col(columns):
 
 def get_end_column(df):
     if marker != '':
+        df = df[~df[marker].isna()]
         df[chrom_head] = df[marker].map(lambda x: x.split(sep)[0])
         df[pos_head] = df[marker].map(lambda x: int(x.split(sep)[1]))
         df['end'] = df['Pos'] + 1
     else:
+        df = df[~df[pos_head].isna()]
         df['end'] = df[pos_head] + 1
     return df
 
