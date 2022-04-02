@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser(description='extract significant QTL results an
 
 parser.add_argument('-p','--path',action='store',dest='path',help='work path')
 parser.add_argument('--pval',type=float,action='store',dest='pval',help='pvalue threshold',default=5e-8)
-parser.add_argument('-a','--anno',action='store',dest='anno',help='annotate results',default='/lustre/workspace/projects/BLCA/Results/snp_indel/anno.vep.tsv.gz')
+parser.add_argument('-a','--anno',action='store',dest='anno',help='annotate results')
 
 args      = parser.parse_args()
 work_path = args.path
@@ -22,20 +22,24 @@ clump_fns  = sorted(glob.glob(f'{clump_path}/*.clumped'))
 tb = tabix.open(anno_fn)
 with gzip.open(anno_fn, 'rt') as in_f:
     columns = in_f.readline().strip().split('\t')
+    anno_chrom = in_f.readline()
 
-def anno_clump(row, tb, columns):
+def anno_clump(row, tb, columns, id_col='ID'):
     '''tb: the object of tabix
     columns: header of the annotation file
     '''
-    chrom, pos, ref, alt = row['ID'].split(':')
+    chrom, pos, ref, alt = row[id_col].split(':')
     genes = []
     conse = []
     cadd = ''
     gnomad = ''
     rsid = ''
     nearest = ''
-    records = tb.query(f'chr{chrom}',int(pos),int(pos)+1)
-
+    if anno_chrom.startswith('chr'):
+        records = tb.query(f'chr{chrom}',int(pos),int(pos)+1)
+    else:
+        records = tb.query(f'{chrom}',int(pos),int(pos)+1)
+    
     for record in records:
         try:
             dic = {k:v for k,v in zip(columns,record)}
