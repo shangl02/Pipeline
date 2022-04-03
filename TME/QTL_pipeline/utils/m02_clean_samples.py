@@ -18,7 +18,6 @@ plink2 = args.plink2
 plink1 = args.plink1
 
 bfile = f'{work_path}/plink/germ_rmSNP38'
-id_map_fn = '/hpc/grid/wip_drm_targetsciences/users/shangzhong/tumor/Clinical/BLCA/meta/wes_id_map.tsv'
 def run(cmd):
     try:
         subprocess.run(cmd.split(), check=True)
@@ -36,7 +35,7 @@ keep_sp = f'{qc_path}/keep_sps38.txt'
 smiss_df[['#FID','IID']].to_csv(keep_sp, sep='\t',index=False)
 
 rmSp_bfile = f'{plink_path}/germ_rmSNP_rmSp38'
-cmd = f'{plink1} --bfile {bfile} --keep {keep_sp} --make-bed --out {rmSp_bfile}'
+cmd = f'{plink2} --bfile {bfile} --keep {keep_sp} --make-bed --out {rmSp_bfile}'
 run(cmd)
 #---------------- update sample names ---------------------
 update_sp_fn = f'{plink_path}/update_sample38.txt'
@@ -47,7 +46,7 @@ print(vcfid_sid_dic)
 smiss_df['id'] = smiss_df['IID'].map(lambda x: vcfid_sid_dic[x])
 smiss_df[['IID','IID','id','id']].to_csv(update_sp_fn, sep='\t',index=False,header=None)
 newSp_bfile = f'{plink_path}/germ_newSp38'
-cmd = f'{plink1} --bfile {rmSp_bfile} --update-ids {update_sp_fn} \
+cmd = f'{plink2} --bfile {rmSp_bfile} --update-ids {update_sp_fn} \
          --make-bed --out {newSp_bfile}'
 run(cmd)
 # get allele frequency
@@ -65,3 +64,10 @@ with open(f'{traw_pre}.traw') as in_f, gzip.open(f'{traw_pre}.traw.gz','wt') as 
     for line in in_f:
         out_f.write(line)
 os.remove(f'{traw_pre}.traw')
+#-------------- transfer the traw.gz to bgzip format -----------
+cmd = f'gunzip {traw_pre}.traw.gz' 
+run(cmd)
+cmd = f'bgzip {traw_pre}.traw'
+run(cmd)
+cmd = f'tabix -p bed -S 1 -b 4 -e 4 {traw_pre}.traw.gz'
+run(cmd)
