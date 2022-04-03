@@ -4,12 +4,12 @@ Input files:
 ------------
 
 Before running the pipeline, you need to prepare some files.
-* Vcf file in gzip format that hhas genotypes of interested cohort.
-* A tabix index gzip file that have annotation information of the variants in vcf file.
+* Vcf file in gzip format that has genotypes of interested cohort.
+* A tabix index gzipped file that have annotation information of the variants in vcf file, annotation can be done using VEP, please check [here](https://github.com/lis262/Variant_Annotation) to generate the annotation file.
 * An id mapping file that has the follwing columns. "vcfid, sid, cytoid,Age,Sex". vcfid is the sample name in vcf file, sid is subject id, cytoid is the sample name in cell abundance file. 
-* Cell abuance file with rows as samples, columns as cell types.
+* Cell abunance file with rows as samples, columns as cell types.
 * Reference plink bfile that will be used to predict ethnicity and calculate Pinciple component for covariates in the model. You can use 1000 genomics file, or use the bfile coverted from the vcf file.
-
+* high LD region file which can be downloaded [here](https://dougspeed.com/high-ld-regions/), it's for hg19, if you want to use hg38, you need to liftover it. I provide both hg19 and hg38 versions here in the repository.
 
 Softwares needed:
 -----------------
@@ -41,7 +41,7 @@ Thie step is to remove samples that come from the same person, we keep the one w
 	         -p work_path \   # should be the same path as step1
 	         --id_map id_mapping_file \
 	         --plink2 path/to/plink2/binary \
-             --plink1 path/to/plink1/binary
+             --plink1 path/to/plink1/binary \
 
 The id_mapping_file needs to have 6 columns, **vcfid, sid, cytoid, Sex, Age, Race.** sid is subject id. cytoid is the cytoreason sample id. This command creates a subfolder **f01_qc** in the plink folder created in step1. It remove the samples with duplicate WGS data and then it updates the sample name by changing the vcfid to DNA_sid, with plink bfile with prefix **germ_newSp38** as output. Finally it transfers the plink file to a table with rows as SNPS and columns as samples and values are genotype. The file name is **germ_newSp38.traw.gz**
 
@@ -54,8 +54,9 @@ This step is used to calculate the principle component of SNPs to predict the et
 		--plink2 path/to/plink2/binary \
         --plink1 path/to/plink1/binary \
         -f flashPCA     # path to flashPCA bianry tool
+        --hld  path/to/high_LD_regions_file
 
-This step creats a folder nameed **f02_pca** in plink folder. It gets overlapped SNPs between cohort and 1k genomics and use these SNPs from 1k genomics to calculate PCA and then project to the cohorts to get the PC for the cohorts.
+This step creats a folder named **f02_pca** in plink folder. It gets overlapped SNPs between cohort and 1k genomics and use these SNPs from 1k genomics to calculate PCA and then project to the cohorts to get the PC for the cohorts.  
 
 ### Step 4) Prepare covarate file and cytoreason file for MatrixQTL anlaysis
 
