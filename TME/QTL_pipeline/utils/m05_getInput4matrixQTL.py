@@ -31,7 +31,7 @@ final_cyto_fn = f'{matrix_path}/cyto.txt'
 final_cov_fn = f'{matrix_path}/covariates.txt'
 
 # 1. plink samples
-fam_df = pd.read_csv(fam_fn, header=None, sep=' ')
+fam_df = pd.read_csv(fam_fn, header=None, sep='\t')
 gt_samples = fam_df[1].tolist()
 
 # 2. cytoreason file
