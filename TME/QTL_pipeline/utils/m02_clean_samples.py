@@ -49,6 +49,11 @@ newSp_bfile = f'{plink_path}/germ_newSp38'
 cmd = f'{plink2} --bfile {rmSp_bfile} --update-ids {update_sp_fn} \
          --make-bed --out {newSp_bfile}'
 run(cmd)
+#---------------- update snp id to chr:pos:ref:alt ---------------------
+bim_fn = f'{newSp_bfile}.bim'
+bim_df = pd.read_csv(bim_fn,sep='\t',header=None)
+bim_df[1] = bim_df.apply(lambda x:':'.join([str(x[0]),str(x[3]),x[5],x[4]]),axis=1)
+bim_df.to_csv(bim_fn,sep='\t',index=False,header=None)
 # get allele frequency
 cmd = f'{plink2} --bfile {newSp_bfile} \
      --freq cols=chrom,pos,ref,alt,altfreq,nobs --out {newSp_bfile}'
