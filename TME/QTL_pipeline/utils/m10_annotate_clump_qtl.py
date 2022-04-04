@@ -1,30 +1,8 @@
 import os, glob, gzip
-import argparse
 import pandas as pd
 import tabix
 
-
-parser = argparse.ArgumentParser(description='extract significant QTL results and annotate them')
-
-
-parser.add_argument('-p','--path',action='store',dest='path',help='work path')
-parser.add_argument('--pval',type=float,action='store',dest='pval',help='pvalue threshold',default=5e-8)
-parser.add_argument('-a','--anno',action='store',dest='anno',help='annotate results')
-
-args      = parser.parse_args()
-work_path = args.path
-pval      = args.pval
-anno_fn   = args.anno
-
-clump_path = f'{work_path}/matrixQTL/clump'
-clump_fns  = sorted(glob.glob(f'{clump_path}/*.clumped'))
-
-tb = tabix.open(anno_fn)
-with gzip.open(anno_fn, 'rt') as in_f:
-    columns = in_f.readline().strip().split('\t')
-    anno_chrom = in_f.readline()
-
-def anno_clump(row, tb, columns, id_col='ID'):
+def anno_clump(row, tb, columns, anno_chrom, id_col='SNP'):
     '''tb: the object of tabix
     columns: header of the annotation file
     '''
@@ -60,27 +38,40 @@ def anno_clump(row, tb, columns, id_col='ID'):
             conse.append(dic['Consequence'])
     return pd.Series([','.join(genes),nearest,','.join(conse),rsid,gnomad,cadd])
 
-# generates {rsid : chr:pos:ref:alt}
-af_fn = f'{work_path}/plink/germ_newSp38.afreq'
-af_df = pd.read_csv(af_fn, sep='\t', header=0)
-af_df['#CHROM'] = af_df['#CHROM'].astype('str')
-af_df['POS'] = af_df['POS'].astype('str')
 
-af_df['snp'] = af_df['#CHROM']+':'+af_df['POS']+':' + \
-               af_df['REF']+':'+af_df['ALT']
-rsid_snp_dic = af_df.set_index('ID')['snp'].to_dict()
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description='extract significant QTL results and annotate them')
 
-anno_clump_fn = f'{work_path}/matrixQTL/clump_sig_anno.tsv'
-head = True
-for clump in clump_fns:
-    clump_df = pd.read_csv(clump, delim_whitespace=True, header=0)
-    clump_df['cell'] = '.'.join(clump.split('/')[-1].split('.')[:-1])
-    clump_df['ID'] = clump_df['SNP'].map(lambda x: rsid_snp_dic[x])
-    clump_df[['Gene','near_50kgene','Consequence','rsid','gnomad','CADD']] = \
-         clump_df.apply(lambda row:anno_clump(row, tb, columns), axis=1)
-    if head:
-        clump_df.to_csv(anno_clump_fn,sep='\t',index=False)
-        head = False
-    else:
-        clump_df.to_csv(anno_clump_fn,sep='\t',index=False,header=False,mode='a')
+
+    parser.add_argument('-p','--path',action='store',dest='path',help='work path')
+    parser.add_argument('--pval',type=float,action='store',dest='pval',help='pvalue threshold',default=5e-8)
+    parser.add_argument('-a','--anno',action='store',dest='anno',help='annotate results')
+
+    args      = parser.parse_args()
+    work_path = args.path
+    pval      = args.pval
+    anno_fn   = args.anno
+
+    clump_path = f'{work_path}/matrixQTL/clump'
+    clump_fns  = sorted(glob.glob(f'{clump_path}/*.clumped'))
     
+    tb = tabix.open(anno_fn)
+    with gzip.open(anno_fn, 'rt') as in_f:
+        columns = in_f.readline().strip().split('\t')
+        anno_chrom = in_f.readline()
+
+    anno_clump_fn = f'{work_path}/matrixQTL/clump_sig_anno.tsv'
+    head = True
+    for clump in clump_fns:
+        clump_df = pd.read_csv(clump, delim_whitespace=True, header=0)
+        clump_df['cell'] = '.'.join(clump.split('/')[-1].split('.')[:-1])
+        # clump_df['ID'] = clump_df['SNP'].map(lambda x: rsid_snp_dic[x])
+        clump_df[['Gene','near_50kgene','Consequence','rsid','gnomad','CADD']] = \
+             clump_df.apply(lambda row:anno_clump(row, tb, columns, anno_chrom), axis=1)
+        if head:
+            clump_df.to_csv(anno_clump_fn,sep='\t',index=False)
+            head = False
+        else:
+            clump_df.to_csv(anno_clump_fn,sep='\t',index=False,header=False,mode='a')
+        

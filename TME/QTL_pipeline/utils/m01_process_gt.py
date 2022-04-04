@@ -27,6 +27,7 @@ def run(cmd):
         subprocess.run(cmd.split(), check=True)
     except subprocess.CalledProcessError:
         raise
+
 #====== transfer blca vcf file to plink file  ======
 plink_path = f'{path}/plink'
 os.makedirs(plink_path,exist_ok=True)
@@ -36,16 +37,19 @@ cmd = f'{plink2} --vcf {vcf} --allow-extra-chr --chr 1-22 \
        --double-id --make-bed \
        --vcf-half-call h --out {pfile}'
 run(cmd)
+
 #====== QC of the variants ===========================
 #------ get allele frequency of the variants ---------
 qc_path = f'{plink_path}/f01_qc'
 os.makedirs(qc_path,exist_ok=True)
 cmd = f'{plink2} --bfile {pfile} --freq --out {qc_path}/freq38'
 run(cmd)
+
 #------ get missingness of the genotype --------------
 missing = f'{qc_path}/germ38'
 cmd = f'{plink2} --bfile {pfile} --missing --out {missing}'
 run(cmd)
+
 #------ check missing rate ---------------------------
 # check the missing rate
 vmiss_fn = f'{qc_path}/germ38.vmiss'
@@ -61,6 +65,7 @@ plt.figure()
 ax = smiss_df['F_MISS'].hist()
 ax.set_title('distribution of missingness in sample level')
 plt.savefig(f'{qc_path}/smiss.png',dpi=300)
+
 #------- plot the frequency ---------------------------
 freq_fn = f'{qc_path}/freq38.afreq'
 freq_df = pd.read_csv(freq_fn, sep='\t',header=0)
@@ -80,6 +85,7 @@ ax.set_title('distribution of Allele Frequency')
 ax.set_xlabel('Allele frequency')
 ax.set_ylabel('number of SNPs')
 plt.savefig(f'{qc_path}/AF_dist.png',dpi=300)
+
 #---------- get the variants for downstream analysis ----------
 keep_snp_fn = f'{qc_path}/keep_snps38.tsv'
 freq_df.query('OBS_CT > 20 and (@af_thred < ALT_FREQS < 1 - @af_thred)')['ID'].to_csv(keep_snp_fn,index=False,header=None)

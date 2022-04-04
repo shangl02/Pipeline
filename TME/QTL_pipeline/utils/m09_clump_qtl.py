@@ -8,9 +8,6 @@ import glob
 
 parser = argparse.ArgumentParser(description='Clump the QTL results')
 
-# parser.add_argument('-i','--qtl',action='store',dest='qtl',help='path that have qtl files')
-# parser.add_argument('-o','--out',action='store',dest='out',help='out path')
-
 parser.add_argument('-p','--path',action='store',dest='path',help='path of project')
 parser.add_argument('--pval',type=float,action='store',dest='pval',help='pvalue threshold',default=5e-8)
 
@@ -26,8 +23,8 @@ qtl_path = f'{work_path}/matrixQTL/cell_qtl'
 qtl_fns = sorted(glob.glob(f'{qtl_path}/*.txt.gz'))
 out_path = f'{work_path}/matrixQTL/clump'
 os.makedirs(out_path, exist_ok=True)
-pval = args.pval
-ref_bfile = f'{work_path}/plink/f02_pca/germ_rmSNP38'
+pval = float(args.pval)
+ref_bfile = f'{work_path}/plink/germ_newSp38'
 
 plink1 = args.plink1
 plink2 = args.plink2
@@ -37,7 +34,7 @@ for qtl_fn in qtl_fns:
     cmd = f'{plink1} --bfile {ref_bfile} --clump {qtl_fn} \
           --clump-snp-field SNP \
           --clump-field p-value \
-          --clump-p1 5e-8 --clump-p2 1 \
+          --clump-p1 {pval} --clump-p2 1 \
           --clump-r2 0.2 --clump-kb 250 \
           --out {out_fn}'
     os.system(cmd)

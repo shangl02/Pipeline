@@ -10,7 +10,6 @@ args = parser.parse_args()
 work_path = args.path
 
 matrixQTL_path = f'{work_path}/matrixQTL'
-matrixQTL = '~/Code/Pipeline/TME/QTL_pipeline/utils/m06_matrixQTL.R'
 matrixQTL = f'{os.path.dirname(os.path.realpath(__file__))}/m06_matrixQTL.R'
 
 # 1. run matrixQTL
@@ -21,4 +20,4 @@ cmd = f'bsub -R \"select[hname!=amrndhl1296]\" \
       {matrixQTL_path} {out_fn} \
      && gzip {matrixQTL_path}/{out_fn}\"'
 print(cmd)
-# os.system(cmd)
+os.system(cmd)

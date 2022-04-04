@@ -119,6 +119,13 @@ bim_df.to_csv(bim_fn,sep='\t',index=False,header=None)
 cmd = f'{plink2} --bfile {newSp_bfile} \
      --freq cols=chrom,pos,ref,alt,altfreq,nobs --out {newSp_bfile}'
 run(cmd)
+#------ remove duplicated SNPS -----------------------
+dedup_bfile = f'{plink_path}/germ38_dedup'
+cmd = f'{plink2} --bfile {newSp_bfile} --rm-dup list force-first --make-bed --out {dedup_bfile}'
+run(cmd)
+os.rename(f'{dedup_bfile}.bed',f'{newSp_bfile}.bed')
+os.rename(f'{dedup_bfile}.bim',f'{newSp_bfile}.bim')
+os.rename(f'{dedup_bfile}.fam',f'{newSp_bfile}.fam')
 #-------------- transfer the plink format into table format ----
 traw_pre = f'{plink_path}/germ_newSp38'
 cmd = f'{plink2} --bfile {newSp_bfile} --recode A-transpose --out {traw_pre}'
