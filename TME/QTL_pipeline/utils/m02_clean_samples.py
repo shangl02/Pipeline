@@ -42,37 +42,9 @@ update_sp_fn = f'{plink_path}/update_sample38.txt'
 id_map_df = pd.read_csv(id_map_fn,sep='\t',header=0)
 id_map_df['sid'] = 'DNA_' + id_map_df['sid'].astype('str')
 vcfid_sid_dic = id_map_df.set_index('vcfid')['sid'].to_dict()
-print(vcfid_sid_dic)
 smiss_df['id'] = smiss_df['IID'].map(lambda x: vcfid_sid_dic[x])
 smiss_df[['IID','IID','id','id']].to_csv(update_sp_fn, sep='\t',index=False,header=None)
 newSp_bfile = f'{plink_path}/germ_newSp38'
 cmd = f'{plink2} --bfile {rmSp_bfile} --update-ids {update_sp_fn} \
          --make-bed --out {newSp_bfile}'
-run(cmd)
-#---------------- update snp id to chr:pos:ref:alt ---------------------
-bim_fn = f'{newSp_bfile}.bim'
-bim_df = pd.read_csv(bim_fn,sep='\t',header=None)
-bim_df[1] = bim_df.apply(lambda x:':'.join([str(x[0]),str(x[3]),x[5],x[4]]),axis=1)
-bim_df.to_csv(bim_fn,sep='\t',index=False,header=None)
-# get allele frequency
-cmd = f'{plink2} --bfile {newSp_bfile} \
-     --freq cols=chrom,pos,ref,alt,altfreq,nobs --out {newSp_bfile}'
-run(cmd)
-#-------------- transfer the plink format into table format ----
-traw_pre = f'{plink_path}/germ_newSp38'
-cmd = f'{plink2} --bfile {newSp_bfile} --recode A-transpose --out {traw_pre}'
-run(cmd)
-with open(f'{traw_pre}.traw') as in_f, gzip.open(f'{traw_pre}.traw.gz','wt') as out_f:
-    head = in_f.readline().strip().split('\t')
-    head = ['_'.join(c.split('_')[:2]) if '_' in c else c for c in head]
-    out_f.write('\t'.join(head) + '\n') 
-    for line in in_f:
-        out_f.write(line)
-os.remove(f'{traw_pre}.traw')
-#-------------- transfer the traw.gz to bgzip format -----------
-cmd = f'gunzip {traw_pre}.traw.gz' 
-run(cmd)
-cmd = f'bgzip {traw_pre}.traw'
-run(cmd)
-cmd = f'tabix -p bed -S 1 -b 4 -e 4 {traw_pre}.traw.gz'
 run(cmd)

@@ -4,15 +4,17 @@ Created by Shangzhong.Li@pfizer.com on
 import os
 import argparse
 import pandas as pd
+import subprocess
+import gzip
 
 parser = argparse.ArgumentParser(description='calculate PC for the cohort')
 
 parser.add_argument('-r','--ref',action='store',dest='ref',help='ref 1k bfile',default='/hpc/grid/hgcb/workspace/projects/P002_reference_information/plink/1000G_6PoP_MAF0.05')
 parser.add_argument('--plink2',action='store',dest='plink2',help='plink2',default='/hpc/grid/wip_drm_targetsciences/users/shangzhong/software/plink2')
 parser.add_argument('--plink1',action='store',dest='plink1',help='plink1',default='/hpc/grid/wip_drm_targetsciences/users/shangzhong/software/plink')
-parser.add_argument('-p','--path',action='store',dest='path',help='path')
+parser.add_argument('-p','--path',action='store',dest='path',help='work path')
 parser.add_argument('-f','--flashPCA',action='store',dest='flashPCA',help='flashPCA',default='/hpc/grid/wip_drm_targetsciences/users/shangzhong/tumor/software/flashpca_x86-64')
-
+parser.add_argument('--hld',action='store',dest='high_ld',help='high ld file')
 
 args = parser.parse_args()
 work_path = args.path
@@ -21,11 +23,17 @@ k1_bfile = args.ref
 plink2 = args.plink2
 plink1 = args.plink1
 flashPCA = args.flashPCA
+high_LD_fn = args.high_ld
 
 bfile = f'{work_path}/plink/germ_newSp38'
 # bfile = '/hpc/grid/wip_drm_targetsciences/users/shangzhong/tumor/Clinical/BLCA/WGS/plink/germ_newSp38'
 # path = '/hpc/grid/wip_drm_targetsciences/users/shangzhong/tumor/Clinical/BLCA/WGS'
 # k1_bfile = '/hpc/grid/hgcb/workspace/projects/P002_reference_information/plink/1000G_6PoP_MAF0.05'
+def run(cmd):
+    try:
+        subprocess.run(cmd.split(), check=True)
+    except subprocess.CalledProcessError:
+        raise
 
 #---------- calculate PC for the cohort ---------------------
 plink_path = f'{work_path}/plink'
@@ -64,7 +72,9 @@ cmd = f'{plink1} --bfile {inter_rmSnp_bfile} --bmerge {inter_1kbfile} \
 os.system(cmd)
 #-------------- Filter missing variants, rare variants and HWE , exclude high LD region --------------------
 merge4prune = f'{pca_path}/merge4prune'
-cmd = f'{plink2} --bfile {merge} --geno 0.01 --maf 0.01 --hwe 0.000001 --exclude range /lustre/workspace/projects/ECD/bzhang2/data/high-LD-regions.txt --make-bed --out {merge4prune}'
+cmd = f'{plink2} --bfile {merge} --geno 0.01 --maf 0.01 --max-maf 0.99 \
+             --hwe 0.000001 --exclude bed0 {high_LD_fn} \
+             --make-bed --out {merge4prune}'
 os.system(cmd)
 #-------------- LD pruning -----------------
 prune = f'{pca_path}/prune'
@@ -98,6 +108,35 @@ cmd = f'{flashPCA} --bfile {b4pca} --project \
 os.system(cmd)
 
 
+#===== change SNP id to chr:pos:ref:alt to make them unambiguous ====
+#---------------- update snp id to chr:pos:ref:alt ---------------------
+newSp_bfile = f'{plink_path}/germ_newSp38'
+bim_fn = f'{newSp_bfile}.bim'
+bim_df = pd.read_csv(bim_fn,sep='\t',header=None)
+bim_df[1] = bim_df.apply(lambda x:':'.join([str(x[0]),str(x[3]),x[5],x[4]]),axis=1)
+bim_df.to_csv(bim_fn,sep='\t',index=False,header=None)
+# get allele frequency
+cmd = f'{plink2} --bfile {newSp_bfile} \
+     --freq cols=chrom,pos,ref,alt,altfreq,nobs --out {newSp_bfile}'
+run(cmd)
+#-------------- transfer the plink format into table format ----
+traw_pre = f'{plink_path}/germ_newSp38'
+cmd = f'{plink2} --bfile {newSp_bfile} --recode A-transpose --out {traw_pre}'
+run(cmd)
+with open(f'{traw_pre}.traw') as in_f, gzip.open(f'{traw_pre}.traw.gz','wt') as out_f:
+    head = in_f.readline().strip().split('\t')
+    head = ['_'.join(c.split('_')[:2]) if '_' in c else c for c in head]
+    out_f.write('\t'.join(head) + '\n') 
+    for line in in_f:
+        out_f.write(line)
+os.remove(f'{traw_pre}.traw')
+#-------------- transfer the traw.gz to bgzip format -----------
+cmd = f'gunzip {traw_pre}.traw.gz' 
+run(cmd)
+cmd = f'bgzip {traw_pre}.traw'
+run(cmd)
+cmd = f'tabix -p bed -S 1 -b 4 -e 4 {traw_pre}.traw.gz'
+run(cmd)
 
 
 
