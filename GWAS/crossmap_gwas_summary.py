@@ -92,29 +92,26 @@ def get_end_column(df):
         df['end'] = df[pos_head] + 1
     return df
 
+def bed_transform(df, head, bed_fn):
+    columns = df.columns.tolist()
+    df.fillna('NA',inplace=True)
+    df = get_end_column(df)
+    new_cols = get_new_col(columns)
+    if head:
+        df[new_cols].to_csv(bed_fn,sep='\t',index=False,compression='gzip')
+        head = False
+    else:
+        df[new_cols].to_csv(bed_fn,sep='\t',index=False,compression='gzip',mode='a',header=None)
+
 def gwas2bed(gwas_fn, temp_path):
     head = True
     bed_fn = f'{temp_path}/temp_' + gwas_fn.split('/')[-1] + '.gz'
     if gwas_fn.endswith('.gz'):
         for df in pd.read_csv(gwas_fn,sep='\t',header=0,compression='gzip',chunksize=1e5):
-            columns = df.columns.tolist()
-            df = get_end_column(df)
-            new_cols = get_new_col(columns)
-            if head:
-                df[new_cols].to_csv(bed_fn,sep='\t',index=False,compression='gzip')
-                head = False
-            else:
-                df[new_cols].to_csv(bed_fn,sep='\t',index=False,compression='gzip',mode='a',header=None)
+            bed_transform(df, head, bed_fn)
     else:
         for df in pd.read_csv(gwas_fn,sep='\t',header=0,chunksize=1e5):
-            columns = df.columns.tolist()
-            df = get_end_column(df)
-            new_cols = get_new_col(columns)
-            if head:
-                df[new_cols].to_csv(bed_fn,sep='\t',index=False,compression='gzip')
-                head = False
-            else:
-                df[new_cols].to_csv(bed_fn,sep='\t',index=False,compression='gzip',mode='a',header=None)
+            bed_transform(df, head, bed_fn)
     return bed_fn
 
 
@@ -156,7 +153,7 @@ def run_crossmap(bed_fn, out_fn, chain):
                     rm {infn} {out} {head} && rm -r {t}').format(
                     out=out_fn,t=temp,head=head_fn,infn=bed_fn) 
     os.system(cmd)
-    # print(cmd)
+    print(cmd)
 
 
 

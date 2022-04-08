@@ -64,27 +64,27 @@ def get_new_col(columns):
       [h for h in columns if h not in [chrom_head, start,end]]
     return new_columns
 
+
+def bed_transform(df, head, bed_fn):
+    columns = df.columns.tolist()
+    df.fillna('NA',inplace=True)
+    new_cols = get_new_col(columns)
+    if head:
+        df[new_cols].to_csv(bed_fn,sep='\t',index=False,compression='gzip')
+        head = False
+    else:
+        df[new_cols].to_csv(bed_fn,sep='\t',index=False,compression='gzip',mode='a',header=None)
+
+
 def gwas2bed(gwas_fn, temp_path):
     head = True
     bed_fn = f'{temp_path}/temp_' + gwas_fn.split('/')[-1] + '.gz'
     if gwas_fn.endswith('.gz'):
         for df in pd.read_csv(gwas_fn,sep='\t',header=0,compression='gzip',chunksize=1e5):
-            columns = df.columns.tolist()
-            new_cols = get_new_col(columns)
-            if head:
-                df[new_cols].to_csv(bed_fn,sep='\t',index=False,compression='gzip')
-                head = False
-            else:
-                df[new_cols].to_csv(bed_fn,sep='\t',index=False,compression='gzip',mode='a',header=None)
+            bed_transform(df, head, bed_fn)
     else:
         for df in pd.read_csv(gwas_fn,sep='\t',header=0,chunksize=1e5):
-            columns = df.columns.tolist()
-            new_cols = get_new_col(columns)
-            if head:
-                df[new_cols].to_csv(bed_fn,sep='\t',index=False,compression='gzip')
-                head = False
-            else:
-                df[new_cols].to_csv(bed_fn,sep='\t',index=False,compression='gzip',mode='a',header=None)
+            bed_transform(df, head, bed_fn)
     return bed_fn
 
 
