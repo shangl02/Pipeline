@@ -102,16 +102,17 @@ def bed_transform(df, head, bed_fn):
         head = False
     else:
         df[new_cols].to_csv(bed_fn,sep='\t',index=False,compression='gzip',mode='a',header=None)
+    return head
 
 def gwas2bed(gwas_fn, temp_path):
     head = True
     bed_fn = f'{temp_path}/temp_' + gwas_fn.split('/')[-1] + '.gz'
     if gwas_fn.endswith('.gz'):
-        for df in pd.read_csv(gwas_fn,sep='\t',header=0,compression='gzip',chunksize=1e5):
-            bed_transform(df, head, bed_fn)
+        for df in pd.read_csv(gwas_fn,sep='\t',header=0,compression='gzip',low_memory=False,chunksize=1e5):
+            head = bed_transform(df, head, bed_fn)
     else:
-        for df in pd.read_csv(gwas_fn,sep='\t',header=0,chunksize=1e5):
-            bed_transform(df, head, bed_fn)
+        for df in pd.read_csv(gwas_fn,sep='\t',header=0,low_memory=False,chunksize=1e5):
+            head = bed_transform(df, head, bed_fn)
     return bed_fn
 
 
@@ -121,8 +122,9 @@ def run_crossmap(bed_fn, out_fn, chain):
     else:
         head_fn = bed_fn + '.head.txt'
     # 1. get head
-    cmd = ('gunzip -c {b} | head -n 1 > {h}').format(b=bed_fn,h=head_fn)
-    os.system(cmd)
+    with gzip.open(bed_fn,'rt') as in_h, open(head_fn,'w') as out_h:
+        fst_line = in_h.readline()
+        out_h.write(fst_line)
     # 2. cross map
     if out_fn.endswith('.gz'):
         out_fn = out_fn[:-3]
@@ -153,7 +155,7 @@ def run_crossmap(bed_fn, out_fn, chain):
                     rm {infn} {out} {head} && rm -r {t}').format(
                     out=out_fn,t=temp,head=head_fn,infn=bed_fn) 
     os.system(cmd)
-    print(cmd)
+    # print(cmd)
 
 
 
