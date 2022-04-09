@@ -25,6 +25,7 @@
 		-o /lustre/scratch/lis262/crossmap/test38.gwas.gz \
 		-t /lustre/scratch/lis262/crossmap/temp \
 		-m MarkName \
+		--sep ':' \
 		--conversion 37to38
 
 
@@ -32,6 +33,7 @@
 * -o: output gwas file, output file will be gzip to save space, needs to be full path.
 * -t: temparay folder to store some intermediate files, needs to be full path
 * -m: header in the input gwas file that indicates merged chromosome and position
+* --sep: separator for chromosome and position in the marker column
 * --conversion: 38to37 or 37to38
 
 
