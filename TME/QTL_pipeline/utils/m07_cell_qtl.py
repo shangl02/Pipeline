@@ -23,6 +23,12 @@ qtl_fn = f'{work_path}/matrixQTL/qtl.txt.gz'
 out_path = f'{work_path}/matrixQTL/cell_qtl'
 os.makedirs(out_path,exist_ok=True)
 
+def format_cell_name(text):
+    chars = "\\`*_{}[]()>#.!$"
+    for c in chars:
+        text = text.replace(c, '_')
+    return text
+
 def add_snp_info(qtl_fn, bim_fn):
     bim_df = pd.read_csv(bim_fn, sep='\t',header=None,names=['chr','SNP','n','pos','ref','alt'])
     for qtl_df in pd.read_csv(qtl_fn,sep='\t',header=0,compression='gzip',chunksize=1e6):
@@ -32,6 +38,7 @@ def add_snp_info(qtl_fn, bim_fn):
         pre = ['chr','pos']
         columns = ['chr','pos'] + [c for c in merge_df.columns if c not in pre]
         for cell, df in merge_df.groupby('gene'):
+            cell = format_cell_name(cell)
             out_fn = f'{out_path}/{cell}.txt.gz'
             if not os.path.exists(out_fn):
                 df[columns].to_csv(out_fn,sep='\t',index=False,compression='gzip')
@@ -57,7 +64,7 @@ def sort_bgzip(qtl_fn, out_path):
     os.remove(head_fn)
     os.remove(qtl_fn)
 #----- 1. split files for each cell type -------------- 
-# add_snp_info(qtl_fn, bim_fn)
+add_snp_info(qtl_fn, bim_fn)
 
 # #------2. generate index for each cell type -----------
 qtl_fns = [f for f in glob.glob(f'{out_path}/*.txt.gz') 
