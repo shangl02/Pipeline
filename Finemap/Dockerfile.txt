@@ -1,0 +1,8 @@
+FROM bioconductor/bioconductor_docker:RELEASE_3_14
+
+MAINTAINER ShangzhongLi <Shangzhong.Li@pfizer.com>
+
+RUN apt-get update && \
+    pip install pandas && \
+    pip install pytabix && \
+    R -e 'devtools::install_github("stephenslab/susieR@v0.11.97")'
