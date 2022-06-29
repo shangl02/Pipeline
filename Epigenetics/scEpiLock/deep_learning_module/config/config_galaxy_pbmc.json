@@ -1,0 +1,24 @@
+{
+  "pos_forward_path": "/home/yanweng/snp_effect/data/for_scEpiLock/pbmc/pbmc_atac_hg19_final.fa",
+  "encode_path": "/home/yanweng/snp_effect/data/for_scEpiLock/pbmc/ENCODE_noPBMC.fa",
+  "neg_path": "/home/yanweng/snp_effect/data/for_scEpiLock/pbmc/neg_noENCODE_noPBMC.fa",
+  "label_path": "/home/yanweng/snp_effect/data/for_scEpiLock/pbmc/label_one_hot.txt",
+  "encode_n": 0,
+  "neg_n": 10000,
+  "model_name": "scEpiLock",
+  "load_trans_model": "False",
+  "num_epochs": 25,
+  "batch_size": 64,
+  "learning_rate": 0.0005,
+  "weight_decay": 0,
+  "use_pos_weight": "False",
+  "cell_cluster": "all",
+  "n_class": 8,
+  "n_class_trans":8,
+  "model_path": "/home/yanweng/snp_effect/data/for_model_v2/output/1213_scEpiLock_encode0_eng10k_pbmc/model.pt",
+  "output_evaluation_data_path": "/home/yanweng/snp_effect/data/for_model_v2/output/1213_scEpiLock_encode0_eng10k_pbmc/",
+  "trans_model_path": "/home/yanweng/snp_effect/data/for_model_v2/output/0402_deepATT_negative10k/model.pt",
+  "subset": "False",
+  "balance": "False"
+}
+

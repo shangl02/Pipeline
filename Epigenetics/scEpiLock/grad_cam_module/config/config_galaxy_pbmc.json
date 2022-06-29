@@ -1,0 +1,12 @@
+{
+  "pos_forward_path": "/home/yanweng/snp_effect/data/for_scEpiLock/pbmc/pbmc_atac_hg19_final.fa",
+  "index": "all",
+  "model_name": "scEpiLock",
+  "n_class": 8,
+  "model_path": "/home/yanweng/snp_effect/data/for_model_v2/output/1213_scEpiLock_encode0_eng10k_pbmc/model.pt",
+  "target_category": [0,1,2,3,4,5,6,7],
+  "subset": "False",
+  "plot": "False",
+  "result_path": "/home/yanweng/snp_effect/data/grad_cam/pbmc/scEpiLock"
+}
+

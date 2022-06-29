@@ -1,0 +1,10 @@
+{
+  "peak_snp_bed": "/home/yanweng/snp_effect/data/brain_snp/paper_all_snp_input/intersect_peak_snp_loc_all_sort.bed",
+  "ref_fasta": "/home/yanweng/common_data/hg38/hg38.fa",
+  "model_name": "scEpiLock",
+  "model_weight_path": "/home/yanweng/snp_effect/data/for_model_brain_corces/output/1213_encode0k_neg10k_brain/model.pt",
+  "n_class": 6,
+  "result_path": "/home/yanweng/snp_effect/data/brain_snp/output/all_snp_20211223"
+}
+
+

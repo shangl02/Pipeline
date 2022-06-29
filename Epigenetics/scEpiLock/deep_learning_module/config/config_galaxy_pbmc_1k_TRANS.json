@@ -1,0 +1,22 @@
+{
+  "pos_forward_path": "/home/yanweng/snp_effect/data/for_model_v2/pbmc_1k_input_fa/merged_pbmc_1kcell_1kb.fa",
+  "encode_path": "/home/yanweng/snp_effect/data/for_model_v2/input_trans_idr_threshold/univeral_negative_yg.fa",
+  "label_path": "/home/yanweng/snp_effect/data/for_model_v2/pbmc_1k_input_fa/label_one_hot.txt",
+  "encode_n": 0,
+  "model_name": "scEpiLock",
+  "load_trans_model": "True",
+  "num_epochs": 20,
+  "batch_size": 64,
+  "learning_rate": 0.0005,
+  "weight_decay": 0,
+  "use_pos_weight": "False",
+  "cell_cluster": "all",
+  "n_class": 8,
+  "n_class_trans":8,
+  "model_path": "/home/yanweng/snp_effect/data/for_model_v2/output/0529_DeepSea4_negative0_pbmc1k_TRANS/model.pt",
+  "output_evaluation_data_path": "/home/yanweng/snp_effect/data/for_model_v2/output/0607_DeepSea4_negative0_pbmc1k_test_avg_TRANS/",
+  "trans_model_path": "/home/yanweng/snp_effect/data/for_model_v2/output_trans/0520_deepsea4/model.pt",
+  "subset": "False",
+  "balance": "False"
+}
+

@@ -1,0 +1,12 @@
+{
+  "pos_forward_path": "/home/yanweng/snp_effect/data/for_model_brain_corces/input/brain_atac_hg38_final.fa",
+  "index": "all",
+  "model_name": "DeepSea4",
+  "n_class": 6,
+  "model_path": "/home/yanweng/snp_effect/data/for_model_v2/output/0522_DeepSea4_negative10k_brain/model.pt",
+  "target_category": [0,1,2,3,4,5],
+  "subset": "False",
+  "plot": "False",
+  "result_path": "/home/yanweng/snp_effect/data/grad_cam/brain/deepsea4/cam"
+}
+
