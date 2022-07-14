@@ -71,12 +71,8 @@ def get_new_col(columns):
         columns = [chrom_head,pos_head, marker] + \
           [h for h in columns if h not in [chrom_head, pos_head,marker]]
 
-    if add_end == 'yes':
-        new_columns = [chrom_head, pos_head,'end'] + \
-          [h for h in columns if h not in [chrom_head, pos_head,'end']]
-    else:
-        new_columns = [chrom_head, pos_head] + \
-          [h for h in columns if h not in [chrom_head, pos_head,'end']]
+    new_columns = [chrom_head, pos_head,'end'] + \
+      [h for h in columns if h not in [chrom_head, pos_head,'end']]
     return new_columns
 
 def get_end_column(df):
@@ -85,7 +81,7 @@ def get_end_column(df):
         df = df.reset_index()
         df[chrom_head] = df[marker].map(lambda x: x.split(sep)[0])
         df[pos_head] = df[marker].map(lambda x: int(x.split(sep)[1]))
-        df['end'] = df['Pos'] + 1
+        df['end'] = df[pos_head] + 1
     else:
         df = df[~df[pos_head].isna()]
         df = df.reset_index()
