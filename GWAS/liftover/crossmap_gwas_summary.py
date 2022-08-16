@@ -85,7 +85,9 @@ def get_end_column(df):
     else:
         df = df[~df[pos_head].isna()]
         df = df.reset_index()
-        df['end'] = df[pos_head] + 1
+        df[pos_head] = df[pos_head].astype(int) 
+        df['end'] = df[pos_head] + 1        
+    df['end'] = df['end'].astype(int) 
     return df
 
 def bed_transform(df, head, bed_fn):
