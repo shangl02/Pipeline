@@ -79,7 +79,7 @@ os.system(cmd)
 #-------------- LD pruning -----------------
 prune = f'{pca_path}/prune'
 cmd = f'{plink2} --bfile {merge4prune} \
-      --indep-pairwise 1500 150 0.2 --out {prune}'
+      --indep-pairwise 50 5 0.5 --out {prune}'
 os.system(cmd)
 cmd = f'{plink2} --bfile {merge4prune} \
         --extract {prune}.prune.in --make-bed --out {prune}'
@@ -142,7 +142,7 @@ cmd = f'gunzip {traw_pre}.traw.gz'
 run(cmd)
 cmd = f'bgzip {traw_pre}.traw'
 run(cmd)
-cmd = f'tabix -p bed -S 1 -b 4 -e 4 {traw_pre}.traw.gz'
+cmd = f'tabix -p bed -f -S 1 -b 4 -e 4 {traw_pre}.traw.gz'
 run(cmd)
 
 

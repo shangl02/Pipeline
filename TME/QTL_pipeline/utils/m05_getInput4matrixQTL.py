@@ -41,8 +41,6 @@ cyto_samples = cyto_df.index.tolist()
 
 # 3. get covariate file
 cov_df = pd.read_csv(cova_fn, sep='\t',header=0,index_col=0)
-cov_df['Sex'] = cov_df['Sex'].map(lambda x: 0 if x=='M' else 1)
-cov_df = cov_df
 cov_samples = cov_df.index.tolist()
 
 common_samples = list(set(gt_samples).intersection(cyto_samples).intersection(cov_samples))
@@ -63,7 +61,8 @@ elif mode == 'norm':
 t_cyto_df[common_samples].to_csv(final_cyto_fn, sep='\t')
 
 # 5. update covariates
-cov_df.replace({'.':'NA'},inplace=True)
+# cov_df.replace({'.':'NA'},inplace=True)
+cov_df.fillna('NA',inplace=True)
 cov_df = cov_df.loc[common_samples,:].T
 cov_df.index.name = 'id'
 cov_df.to_csv(final_cov_fn, sep='\t')

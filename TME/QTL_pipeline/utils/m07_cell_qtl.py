@@ -30,7 +30,7 @@ def format_cell_name(text):
     return text
 
 def add_snp_info(qtl_fn, bim_fn):
-    bim_df = pd.read_csv(bim_fn, sep='\t',header=None,names=['chr','SNP','n','pos','ref','alt'])
+    bim_df = pd.read_csv(bim_fn, sep='\t',header=None,names=['chr','SNP','n','pos','alt','ref'])
     for qtl_df in pd.read_csv(qtl_fn,sep='\t',header=0,compression='gzip',chunksize=1e6):
         merge_df = pd.merge(qtl_df,bim_df[['SNP','chr','pos','ref','alt']],
                                 on=['SNP'],how='left')

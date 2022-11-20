@@ -67,6 +67,7 @@ cell_gt_df = cell_gt_df.sort_values('gt')
 if na == 'no':
     cell_gt_df = cell_gt_df[cell_gt_df['gt'].isin(['0','1','2'])]
 # 4. plot for a single plot
+cell_gt_df = cell_gt_df.sort_values('gt',ascending=False)
 ax = sns.boxplot(y=cell,x="gt",data=cell_gt_df,boxprops=dict(alpha=.5))
 ax = sns.swarmplot(y=cell,x="gt",data=cell_gt_df)
 ax.set_title(snp)
