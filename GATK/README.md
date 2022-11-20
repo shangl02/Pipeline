@@ -15,6 +15,7 @@ There are two parts for this pipeline.
 
 4. Identify DeNovo variants using GATK
 	- This pipeline follows the suggested pipeline here https://gatk.broadinstitute.org/hc/en-us/articles/360035531432?id=11074 to find the DeNovo mutations.
+	- **The pedigree file name before the first . must be the same as vcf file name before the first .**, eg: vcf file name is sample.vcf.gz or sample.sort.vcf.gz, then the pedigree file name must be sample.ped
 	- How to run it:
 		- **nextflow run p04_GATK_DeNovo.nf -c p04_GATK_DeNovo.config -resume**
 
