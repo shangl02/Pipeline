@@ -1,8 +1,10 @@
-vcf_fn=/lustre/workspace/projects/BLCA/Results/WES/vcf/anno/wes_germ.norm.rsid.hg38.vcf.gz
-work_path=/hpc/grid/wip_drm_targetsciences/users/shangzhong/tumor/Clinical/BLCA/WES
-code_path=~/Code/Scripts/tumor_microenvironment/WGS/utils/
-id_map=/hpc/grid/wip_drm_targetsciences/users/shangzhong/tumor/Clinical/BLCA/WES/wes_id_map.tsv
+# vcf_fn=/lustre/workspace/projects/BLCA/Results/WES/vcf/anno/wes_germ.norm.rsid.hg38.vcf.gz
+vcf_fn=/hpc/grid/wip_drm_targetsciences/users/shangzhong/tumor/Clinical/BLCA/imp_WES/germ_newSp38_imp_rsid.vcf.gz
+work_path=/hpc/grid/wip_drm_targetsciences/users/shangzhong/tumor/Clinical/BLCA/imp_WES
+code_path=~/Code/Pipeline/TME/QTL_pipeline/utils/
+id_map=$work_path/wes_id_map.tsv
 cyto_fn=/hpc/grid/wip_drm_targetsciences/users/shangzhong/tumor/Clinical/BLCA/WGS/Javline_cytoreason_table.tsv
+anno=/hpc/grid/wip_drm_targetsciences/users/shangzhong/tumor/Clinical/BLCA/imp_WES/anno/imp_WES.vep.tsv.gz
 # step1
 # python $code_path/m01_process_gt.py -i $vcf_fn -p $work_path
 # step2
@@ -20,8 +22,8 @@ cyto_fn=/hpc/grid/wip_drm_targetsciences/users/shangzhong/tumor/Clinical/BLCA/WG
 # step8 
 # python $code_path/m08_qqplot.py -p $work_path
 # step9
-# python $code_path/m09_clump_qtl.py -p $work_path
+python $code_path/m09_clump_qtl.py -p $work_path --pval 5e-7
 # step10
-python $code_path/m10_annotate_clump_qtl.py -p $work_path
+python $code_path/m10_annotate_clump_qtl.py -p $work_path -a $anno
 
 

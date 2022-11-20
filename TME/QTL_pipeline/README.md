@@ -43,7 +43,7 @@ Thie step is to remove samples that come from the same person, we keep the one w
 	         --plink2 path/to/plink2/binary \
              --plink1 path/to/plink1/binary \
 
-The id_mapping_file needs to have 6 columns, **vcfid, sid, cytoid, Sex, Age, Race.** sid is subject id. cytoid is the cytoreason sample id. This command creates a subfolder **f01_qc** in the plink folder created in step1. It remove the samples with duplicate WGS data and then it updates the sample name by changing the vcfid to DNA_sid, with plink bfile with prefix **germ_newSp38** as output. Finally it transfers the plink file to a table with rows as SNPS and columns as samples and values are genotype. The file name is **germ_newSp38.traw.gz**
+The id_mapping_file needs to have 6 columns, **vcfid, sid, cytoid, Sex, Age, Race.** sid is subject id. cytoid is the cytoreason sample id. This command creates a subfolder **f01_qc** in the plink folder created in step1. It remove the samples with duplicate WGS data and then it updates the sample name by changing the vcfid to DNA_sid, with plink bfile with prefix **germ_newSp38** as output.
 
 ### Step 3) Calculate PC forthe cohort
 This step is used to calculate the principle component of SNPs to predict the ethnicity. It uses 1k genomeics as refrence.
@@ -56,7 +56,7 @@ This step is used to calculate the principle component of SNPs to predict the et
         -f flashPCA     # path to flashPCA bianry tool
         --hld  path/to/high_LD_regions_file
 
-This step creats a folder named **f02_pca** in plink folder. It gets overlapped SNPs between cohort and 1k genomics and use these SNPs from 1k genomics to calculate PCA and then project to the cohorts to get the PC for the cohorts.  
+This step creats a folder named **f02_pca** in plink folder. It gets overlapped SNPs between cohort and reference cohort (eg:1k genomics) and use these SNPs from reference cohort to calculate PCA and then project to the cohorts to get the PC for the cohorts. Then it transfers the plink file to a table with rows as SNPS and columns as samples and values are genotypes. The file name is **germ_newSp38.traw.gz** 
 
 ### Step 4) Prepare covarate file and cytoreason file for MatrixQTL anlaysis
 
@@ -66,6 +66,7 @@ This step will add 'DNA_' as prefix for subject id in id mapping file. Currently
 		-p work_path \         # same as previous steps
 		--id_map id_map_fn \   # file id map file used in step2
 		-d deconvolute_cell_fn # file with cell type abundance data 
+
 After the command, it will generate two files: one named 'covariates.txt' with rows as covariates and columns as samples, another named 'cyto.txt' with rows as cell types, columns as samples. Please check if the sample names are the same as in the file **germ_newSp38.traw.gz** in step 2.
 
 ### Step 5) Prepare files for MatrixQTL
@@ -91,7 +92,8 @@ This step split the QTL results for each cell type, because we need to do clump 
 
 	python m07_cell_qtl.py \
 		-p work_path          # same as previous steps
-This step creates a folder **cell_qtl** in folder matrixQTL, it splits the QTL results in file qtl.txt.gz into cell type specific QTL results with cell type as the file names.
+
+This step creates a folder **cell_qtl** in folder matrixQTL, it splits the QTL results in file qtl.txt.gz into cell type specific QTL results with cell type as the file names. When spliting, it also adds detailed information of the QTL results such as chromosome, position, ref and alt.
 
 ### Step 8) Q-Q plot checking
 	python m08_qqplot.py \
@@ -106,6 +108,7 @@ This step clum the QTL for each cell type separately.
 		--pval pvalue        # threshold of pvalue
 		--plink2 path/to/plink2/binary \
         --plink1 path/to/plink1/binary		
+
 It generates a folder **clump** in folder matrixQTL. The folder stores clump results for each cell type
 
 ### Step 10) Annotate significant QTL results
@@ -116,4 +119,6 @@ This step extract significant QTL results and annotate them. You need to have a 
 		--pval pvalue \      # pavalue threshold for significant QTL resutls
 		-a anno_fn           # annotated results using VEP
 
+
+## Peer factor correction using RNA-Seq data
 

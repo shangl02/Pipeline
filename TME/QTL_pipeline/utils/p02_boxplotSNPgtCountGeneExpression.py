@@ -65,7 +65,9 @@ if na == 'no':
     tpm_gt_df = tpm_gt_df[tpm_gt_df['gt'].isin(['0','1','2'])]
 
 # 4. plot for a single plot
+tpm_gt_df = tpm_gt_df.sort_values('gt',ascending=False)
 ax = sns.boxplot(y=gid,x="gt",data=tpm_gt_df,boxprops=dict(alpha=.5))
 ax = sns.swarmplot(y=gid,x="gt",data=tpm_gt_df)
 ax.set_title(snp)
+ax.set_ylabel(f'{gid} (tpm)')
 plt.savefig(out_fn)
