@@ -137,9 +137,14 @@ process Joint_call {
 	file genotype_vcf from genotyped.collect()
 	file genotype_vcf_idx from genotyped_idx.collect()
 
+	output:
+	file "cohort.smoove.square.vcf.gz"
+	file "cohort.smoove.square.vcf.gz.tbi"
 
 	script:
 	"""
 	smoove paste --name cohort *.vcf.gz
+	tabix cohort.smoove.square.vcf.gz
+	echo cohort.smoove.square.vcf.gz.tbi
 	"""
 }
