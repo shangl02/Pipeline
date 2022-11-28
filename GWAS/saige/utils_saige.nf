@@ -11,9 +11,9 @@ process get_chrom_bfiles {
         """
         echo ${chrom}
         basename ${prefix}
-        echo ${prefix}*.bed
-        echo ${prefix}*.bim
-        echo ${prefix}*.fam
+        echo ${prefix}.bed
+        echo ${prefix}.bim
+        echo ${prefix}.fam
         """
 }
 
@@ -29,8 +29,8 @@ process get_chrom_vcf_files {
         """
         echo ${chrom}
         basename ${prefix}
-        echo ${prefix}*.vcf.gz
-        echo ${prefix}*.vcf.gz.csi
+        echo ${prefix}.vcf.gz
+        echo ${prefix}.vcf.gz.csi
         """
 }
 
