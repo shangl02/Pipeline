@@ -10,5 +10,5 @@ We use singularity/docker image to run the analysis. Command to download the ima
 ## Run pipeline
 For Chip data, all of the variants for step1 are in one plink file. For WES data, variants for step1 are split by chromosome, so we have two main file here for each file. The command to run the pipeline is:
 
-    singularity -B /:/media run saige_nextflow.sif nextflow main_wes.nf -c saige_wes.config
+    singularity run -B /:/media saige_nextflow.sif nextflow main_wes.nf -c saige_wes.config
 
