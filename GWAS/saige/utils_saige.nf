@@ -183,7 +183,7 @@ process saige_step2_bgen {
         tuple val(bgen_pre), path(bgen_file), path(bgen_idx), path(bgen_sample)
 
     output:
-        val(bgen_pre), emit: step2_out
+        val(bgen_pre), path("${bgen_pre}_asso.txt"), path("${bgen_pre}_asso.txt.index") ,emit: step2_out
 
     script:
         """
@@ -195,7 +195,7 @@ process saige_step2_bgen {
             --minMAC=3 \
             --GMMATmodelFile=${rda_vari[0]} \
             --varianceRatioFile=${rda_vari[1]}   \
-            --SAIGEOutputFile=${bgen_pre}_asso \
+            --SAIGEOutputFile=${bgen_pre}_asso.txt \
             --LOCO=FALSE  # --numLinesOutput=1000
         """
 }
