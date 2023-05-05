@@ -183,7 +183,7 @@ process saige_step2_bgen {
         tuple val(bgen_pre), path(bgen_file), path(bgen_idx), path(bgen_sample)
 
     output:
-        val(bgen_pre), path("${bgen_pre}_asso.txt"), path("${bgen_pre}_asso.txt.index") ,emit: step2_out
+        tuple val(bgen_pre), path("${bgen_pre}_asso.txt"), path("${bgen_pre}_asso.txt.index") ,emit: step2_out
 
     script:
         """
