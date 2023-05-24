@@ -1,0 +1,13 @@
+name: sra_tools
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - pip=23.1.2
+  - python=3.9
+  - sra-tools=3.0.3
+
+  - pip:
+      - pandas==2.0.1
+      - pysradb==2.0.2
+      - xlrd==2.0.1
