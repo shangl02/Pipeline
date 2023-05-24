@@ -201,3 +201,108 @@ process saige_step2_bgen {
 }
 
 
+
+//================= gene based steps =========================
+// saige step1 for plink files
+process saige_gene_step1_chrom_gt {
+    tag "${prefix}"
+    publishDir "${params.outdir}/step1", mode: "copy"
+
+    input:
+        tuple val(chrom), val(prefix), path(bed), path(bim), path(fam)
+        each path(spsGRM)
+        each path(spsSample)
+        each path(pheno_cova_fn)
+        val covar
+        val cate_cova
+        val trait_type
+        val thread
+
+    output:
+        tuple val(chrom), path("${prefix}_step1.rda"), path("${prefix}_step1.varianceRatio.txt"), emit: step1_out
+    
+    script:
+        if(params.trait_type == "quantitative")
+        """
+        step1_fitNULLGLMM.R \
+            --plinkFile=${prefix} \
+            --sparseGRMFile=${spsGRM} \
+            --sparseGRMSampleIDFile=${spsSample} \
+            --phenoFile=${pheno_cova_fn} \
+            --phenoCol=pheno \
+            --covarColList=${covar} \
+            --qCovarColList=${cate_cova} \
+            --sampleIDColinphenoFile=IID \
+            --traitType=${trait_type} \
+            --invNormalize=TRUE \
+            --outputPrefix=${prefix}_step1 \
+            --nThreads=${thread} \
+            --useSparseGRMtoFitNULL=FALSE    \
+            --isCateVarianceRatio=TRUE      \
+            --useSparseGRMforVarRatio=TRUE  \
+            --IsOverwriteVarianceRatioFile=TRUE \
+            --tauInit=1,0 \
+            --LOCO=FALSE
+        """
+        else if(params.trait_type == "binary")
+        """
+        step1_fitNULLGLMM.R \
+            --plinkFile=${prefix} \
+            --sparseGRMFile=${spsGRM} \
+            --sparseGRMSampleIDFile=${spsSample} \
+            --phenoFile=${pheno_cova_fn} \
+            --phenoCol=pheno \
+            --covarColList=${covar} \
+            --qCovarColList=${cate_cova} \
+            --sampleIDColinphenoFile=IID \
+            --traitType=${trait_type} \
+            --invNormalize=FALSE \
+            --outputPrefix=${prefix}_step1 \
+            --nThreads=${thread} \
+            --useSparseGRMtoFitNULL=FALSE    \
+            --isCateVarianceRatio=TRUE      \
+            --useSparseGRMforVarRatio=TRUE  \
+            --IsOverwriteVarianceRatioFile=TRUE \
+            --tauInit=0,0 \
+            --LOCO=FALSE
+        """
+}
+
+
+// saige step2 for vcf files, use chromosome as input index
+process saige_gene_step2_vcf {
+    tag "${vcf_pre}"
+    publishDir "${params.outdir}/step2", mode: 'copy'
+
+    input:
+        tuple val(chrom), path(rda), path(variation_ratio), val(vcf_pre), path(vcf_file), path(vcf_idx)
+        each path(spsGRM)
+        each path(spsSample)
+        each path(gene_group_fn)
+        val vcf_field
+
+    output:
+        tuple val(vcf_pre), path("${vcf_pre}_asso.txt"), path("${vcf_pre}_asso.txt.index"), emit: step2_out
+
+    script:
+        """
+        step2_SPAtests.R \
+            --vcfFile=${vcf_file}    \
+            --vcfFileIndex=${vcf_idx}   \
+            --vcfField=${vcf_field} \
+            --SAIGEOutputFile=${vcf_pre}_asso.txt \
+            --chrom=${chrom} \
+            --LOCO=TRUE \
+            --minMAF=0 \
+            --minMAC=0.5 \
+            --GMMATmodelFile=${rda} \
+            --varianceRatioFile=${variation_ratio}      \
+            --sparseGRMFile=${spsGRM} \
+            --sparseGRMSampleIDFile=${spsSample} \
+            --groupFile=${gene_group_fn} \
+            --annotation_in_groupTest=lof,missense,missense:lof \
+            --maxMAF_in_groupTest=0.001 \
+            --is_output_markerList_in_groupTest=TRUE \
+            --is_fastTest=TRUE
+        """
+}
