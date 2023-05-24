@@ -11,7 +11,7 @@ The pipeline uses tool [smoove](https://github.com/brentp/smoove) which uses lum
 
 ## How  to run the pipeline
 1 Define parameters in lumpy_smoove.config <br/>
-2 Secondin terminal run command
+2 In terminal run command
 
 	singularity run -B /:/media smoove_nextflow_v0.2.5.sif \
 	  	nextflow run /media/path/to/lumpy_smoove.nf \
