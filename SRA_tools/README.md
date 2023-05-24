@@ -1,5 +1,5 @@
 This pipeline uses sra toolkit fasterq-dump to download raw fastq files.
-
+First, it read in gse desing file, then get srr id from srx id, and use bsub to download each srr fastq files in parallel, after the download it changes file name to gseid.fastq.gz
 
 ## Environment preparation
 
