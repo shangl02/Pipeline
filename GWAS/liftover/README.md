@@ -1,4 +1,7 @@
 ### This docker file has the pipeline to liftover GWAS summary stats
+You can download the docker container in HPC using the following command:
+
+	singularity pull docker://shl198/crossmap4gwas:0.6.v2
 
 #### If your GWAS summary stats file has one position column, use the following code:
 	
