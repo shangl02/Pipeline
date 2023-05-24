@@ -1,4 +1,4 @@
-This pipeline aims to run the QTL analaysis for identifying the association between variants and immune cell abundance. It assumes the genotype already been imputed for genotype array/WES, or the genotype is from WGS/WES and doesn't need to impute.
+# This pipeline aims to run the QTL analaysis for identifying the association between variants and immune cell abundance. It assumes the genotype already been imputed for genotype array/WES, or the genotype is from WGS/WES and doesn't need to impute.
 
 Input files:
 ------------
