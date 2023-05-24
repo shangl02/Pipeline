@@ -5,7 +5,7 @@ You can download the docker container in HPC using the following command:
 
 #### If your GWAS summary stats file has one position column, use the following code:
 	
-	singularity run -B /:/media crossmap4gwas_0.6.sif \
+	singularity run -B /:/media crossmap4gwas_0.6.v2.sif \
 		python /opt/crossmap_gwas_summary.py \
 		-i /lustre/scratch/lis262/crossmap/test37.gwas.gz \
 		-o /lustre/scratch/lis262/crossmap/test38.gwas.gz \
@@ -24,7 +24,7 @@ You can download the docker container in HPC using the following command:
 * --add_end: to inidicate if add an end column in the result, the end position will be pos+1. if you don't want that columns, set it to 'no'.
 
 #### If your GWAS summary stats file has chromosome and position columns merged together, use the following code
-	singularity run -B /:/media crossmap4gwas_0.6.v1.sif \
+	singularity run -B /:/media crossmap4gwas_0.6.v2.sif \
 		python /opt/crossmap_gwas_summary.py \
 		-i /lustre/scratch/lis262/crossmap/test37.gwas.gz \
 		-o /lustre/scratch/lis262/crossmap/test38.gwas.gz \
@@ -44,7 +44,7 @@ You can download the docker container in HPC using the following command:
 
 #### If your GWAS summary stats file has both start and end column, use the following code:
 	
-	singularity run -B /:/media crossmap4gwas_0.6.sif \
+	singularity run -B /:/media crossmap4gwas_0.6.v2.sif \
 		python /opt/crossmap_gwas_summary.py \
 		-i /lustre/scratch/lis262/crossmap/test37.gwas.gz \
 		-o /lustre/scratch/lis262/crossmap/test38.gwas.gz \
