@@ -5,6 +5,7 @@ First, it read in gse desing file, then get srr id from srx id, and use bsub to 
 
 	conda env create -f environment.yml
 
+If you have errors about can't find the packages, please consider setting other versions of the corresponding packages
 
 ## ncbi parameter configuration
 By default, fasterq-dump download the cache sra file into your home folder, if you are using servers like HPC, you may be allocated limited space, so it is recommended to change the default cache file location. To do that, you need to modify the parameters in file **~/.ncbi/user-settings.mkfg**
