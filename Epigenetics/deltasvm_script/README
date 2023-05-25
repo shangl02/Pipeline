@@ -1,0 +1,42 @@
+deltaSVM README file
+====================
+
+  deltasvm.pl is a simple perl script that calculates the changes in SVM
+  weights.  Please cite the following paper if you use our method:
+
+  Lee D*, Gorkin DU*, Baker M, Strober BJ, Asoni AL, McCallion AS, and Beer MA.
+  Predicting the Impact of Regulatory Variants From DNA Sequence. Submitted.
+  * Co-first
+
+Tutorial
+========
+
+  deltasvm.pl takes 4 input parameters as follows:
+    ref_seq_file
+    alt_seq_file
+    svm_weight_file
+    output_file
+
+  As an example, we provide sample files along with the script.  ref_seq_ex.fa
+  has three 19bp sequences centered at the three SNPs (rs11102967, rs1277917,
+  and rs12740374) with reference alleles.  Similarly, alt_seq_ex.fa also has
+  the three sequences.  Please note that they should be in the exactly same
+  order with the same sequence id.  Also, all sequences should be written in one
+  line (new lines are not allowed within a sequence).
+
+  Now you can calculate the deltaSVM scores for these SNPs using any SVM weight
+  file.  As a simple exercise, download the SVM weight file trained on HepG2 DHS
+  from the following URL:
+
+  http://www.beerlab.org/deltasvm/downloads/SupplementaryTable_hepg2weights.txt
+
+  And type:
+  $ perl deltasvm.pl ref_seq_ex.fa alt_seq_ex.fa SupplementaryTable_hepg2weights.txt test_output.txt
+
+  test_output.txt will look like the following (also included as output_ex.txt):
+
+  rs11102967      0.130464
+  rs1277917       1.652959
+  rs12740374      7.359249
+
+  If you have any question, please send me an email at dwlee AT jhu DOT edu

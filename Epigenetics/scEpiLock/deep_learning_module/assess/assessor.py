@@ -113,16 +113,16 @@ class Assessor:
             # rf_test_y_hat = np.load("/home/yanweng/snp_effect/data/for_baseline_ml/result/brain_rf/test_pred.npy")
 
             # pbmc
-            rf_test_y = np.load("/home/yanweng/snp_effect/data/for_baseline_ml/result/pbmc_rf/test_label.npy")
-            rf_test_y_hat = np.load("/home/yanweng/snp_effect/data/for_baseline_ml/result/pbmc_rf/test_pred.npy")
+            # rf_test_y = np.load("/home/yanweng/snp_effect/data/for_baseline_ml/result/pbmc_rf/test_label.npy")
+            # rf_test_y_hat = np.load("/home/yanweng/snp_effect/data/for_baseline_ml/result/pbmc_rf/test_pred.npy")
 
 
-            self._plot_overall_roc_auc_with_rf(y_train, p_train_pred, y_test_fr_final, p_test_fr_pred_final,
-                                               rf_test_y, rf_test_y_hat,
-                                               self._output_evaluation_data_path)
-            self._plot_overall_rocpr_with_rf(y_test_fr_final, p_test_fr_pred_final,
-                                               rf_test_y, rf_test_y_hat,
-                                               self._output_evaluation_data_path)
+            # self._plot_overall_roc_auc_with_rf(y_train, p_train_pred, y_test_fr_final, p_test_fr_pred_final,
+             #                                  rf_test_y, rf_test_y_hat,
+              #                                 self._output_evaluation_data_path)
+            # self._plot_overall_rocpr_with_rf(y_test_fr_final, p_test_fr_pred_final,
+               #                                rf_test_y, rf_test_y_hat,
+                #                               self._output_evaluation_data_path)
 
             print("multi-label metrics and roc curve done")
 

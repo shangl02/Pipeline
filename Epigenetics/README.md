@@ -1,6 +1,10 @@
 # Filter
 This pipeline predicts variants effect on chromatine openness. It uses [scEpiLock](https://github.com/aicb-ZhangLabs/scEpiLock) to train the model using single cell ATACSeq data. One good source of scATACseq can be download from this paper: [A single-cell atlas of chromatin accessibility in the human genome](https://www.sciencedirect.com/science/article/pii/S0092867421012794).
 
+## How to build model
+The pipeline to train the model is in the jupyter notebook **train_epigenetics_model.ipynb**
+
+
 ## How to run the pipeline
 
 	python variant_predict/variant_impact.py \
